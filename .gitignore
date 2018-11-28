@@ -1,0 +1,6 @@
+/node_modules
+/.vscode
+package-lock.json
+/test/config/object/router/message.js
+/test/config/object/router/user.js
+/test/config/relation/router/user/message.js

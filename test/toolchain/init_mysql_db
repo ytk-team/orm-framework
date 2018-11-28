@@ -1,0 +1,36 @@
+#!/bin/bash
+CWD=$(realpath $(cd "$(dirname "$0")"; pwd))
+
+function buildObject {
+    objectSourceDir=$1
+    if [[ -d ${objectSourceDir}/schema ]]; then
+        for object in `ls ${objectSourceDir}/schema`; do
+            object=$(echo "$object" | sed -r "s/\.js$//g")
+            echo "    [object] ${object}"
+            node ${CWD}/../../bin/build_mysql -d ${objectSourceDir} -t object ${object}
+        done
+    fi
+}
+
+function buildRelation {
+    relationSourceDir=$1
+    if [[ -d ${relationSourceDir}/schema ]]; then
+        for subject in `ls ${relationSourceDir}/schema`; do
+            if [[ ! -d ${relationSourceDir}/schema/${subject} ]]; then
+                echo "expect ${relationSourceDir}/schema/${subject} to be a folder"
+            fi
+            for object in `ls ${relationSourceDir}/schema/${subject}`; do
+                relation=${subject}'.'${object}
+                relation=$(echo "$relation" | sed -r "s/\.js$//g")
+                echo "    [relation] ${relation}"
+                node ${CWD}/../../bin/build_mysql -d ${relationSourceDir} -t relation ${relation}
+            done
+        done
+    fi
+}
+
+sourceDir=${CWD}/../config
+echo "start building mysql ..."
+buildObject ${sourceDir}/object
+buildRelation ${sourceDir}/relation
+echo "done"

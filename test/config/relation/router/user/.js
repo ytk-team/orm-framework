@@ -1,0 +1,1 @@
+/home/xs/project/qtk/orm-framework/test/config/relation/router/user//home/xs/project/qtk/orm-framework/test/config/relation/router/user/message.mysql.js

@@ -1,0 +1,48 @@
+{
+  "author": {
+    "name": "ray && leo && skip"
+  },
+  "bin": {
+    "orm_build_mysql": "bin/build_mysql/index.js",
+    "orm_destroy_mysql": "bin/destroy_mysql/index.js",
+    "orm_purge_data": "bin/purge_data/index.js"
+  },
+  "bugs": {
+    "url": "https://github.com/vanchu001/orm-framework/issues"
+  },
+  "bundleDependencies": false,
+  "dependencies": {
+    "assert": "^1.4.1",
+    "isobject": "^3.0.1",
+    "json-hash": "^1.2.0",
+    "klaw-sync": "^3.0.2",
+    "mocha": "^5.2.0",
+    "mysql": "^2.16.0",
+    "opts": "^1.2.6",
+    "process-key-mutex": "^1.0.0",
+    "redis": "^2.8.0",
+    "uuid": "^3.3.2"
+  },
+  "deprecated": false,
+  "description": "orm",
+  "directories": {
+    "example": "example",
+    "test": "test"
+  },
+  "homepage": "https://github.com/vanchu001/orm-framework#readme",
+  "keywords": [
+    "orm",
+    "schema"
+  ],
+  "license": "ISC",
+  "main": "index.js",
+  "name": "@qtk/orm-framework",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vanchu001/orm-framework.git"
+  },
+  "scripts": {
+    "test": "mocha"
+  },
+  "version": "3.0.0"
+}

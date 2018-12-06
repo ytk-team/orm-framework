@@ -4,12 +4,14 @@ module.exports = {
             subject: '0000000000000001',
             object: 1,
             status: 1,
+            text: "abcd",
             readTime: 1516538014
         },
         {
             subject: '0000000000000001',
             object: 2,
             status: 2,
+            text: "dcba",
             deletedTime: 1516538014
         }
     ],

@@ -3,8 +3,10 @@ const uuid = require('uuid');
 const times = 100;
 const ORM = require('../');
 ORM.setup({
-	objectPath: `${__dirname}/config/object`,
-    relationPath: `${__dirname}/config/relation`,
+    objectSchemaPath: `${__dirname}/config/object/schema`,
+    objectRouterPath: `${__dirname}/config/object/router`,
+    relationSchemaPath: `${__dirname}/config/relation/schema`,
+    relationRouterPath: `${__dirname}/config/relation/router`,
     removeSchemaUndefinedProperties: false
 });
 const ObjectUser = new ORM.Object('user');
@@ -147,6 +149,75 @@ describe('#time', function () {
         console.log(`object-array-shift: ${(process.uptime() - time) * 1000 / times} ms`);
     });
 
+    it('[object-count-where]', async function() {
+        this.timeout(100000000);
+        await Promise.all([
+            ObjectUser.set(Users[0]), 
+            ObjectUser.set(Users[1]), 
+            ObjectUser.set(Users[2])
+        ]);
+        
+        var time = process.uptime();
+        for (let i = 0; i < times; i++) {
+            await ObjectUser.count();
+        }
+        console.log(`object-count: ${(process.uptime() - time) * 1000 / times} ms`);
+
+        var time = process.uptime();
+        for (let i = 0; i < times; i++) {
+            await ObjectUser.count(ORM.Logic.whereEq('.id', Users[0].id));
+        }
+        console.log(`object-count-where(operator id): ${(process.uptime() - time) * 1000 / times} ms`);
+
+        var time = process.uptime();
+        for (let i = 0; i < times; i++) {
+            await ObjectUser.count(ORM.Logic.whereEq('.name', Users[0].name));
+        }
+        console.log(`object-count-where(operator name): ${(process.uptime() - time) * 1000 / times} ms`);
+
+        var time = process.uptime();
+        for (let i = 0; i < times; i++) {
+            await ObjectUser.count(ORM.Logic.whereNot(ORM.Logic.whereEq('.name', Users[0].name)));
+        }
+        console.log(`object-count-where(not): ${(process.uptime() - time) * 1000 / times} ms`);
+
+        var time = process.uptime();
+        for (let i = 0; i < times; i++) {
+            await ObjectUser.count(ORM.Logic.whereIn('.name', Users[0].name, Users[1].name));
+        }
+        console.log(`object-count-where(in): ${(process.uptime() - time) * 1000 / times} ms`);
+
+        var time = process.uptime();
+        for (let i = 0; i < times; i++) {
+            await ObjectUser.count(ORM.Logic.whereAnd(
+                ORM.Logic.whereEq('.name', Users[0].name),
+                ORM.Logic.whereEq('.id', Users[0].id)
+            ));
+        }
+        console.log(`object-count-where(and): ${(process.uptime() - time) * 1000 / times} ms`);
+
+        var time = process.uptime();
+        for (let i = 0; i < times; i++) {
+            await ObjectUser.count(ORM.Logic.whereOr(
+                ORM.Logic.whereEq('.name',  Users[0].name),
+                ORM.Logic.whereEq('.name', Users[1].name)
+            ));
+        }
+        console.log(`object-count-where(or): ${(process.uptime() - time) * 1000 / times} ms`);
+
+        var time = process.uptime();
+        for (let i = 0; i < times; i++) {
+            await ObjectUser.count(ORM.Logic.whereLike('.name', `%${Users[0].name.substr(1, 3)}%`));
+        }
+        console.log(`object-count-where(like): ${(process.uptime() - time) * 1000 / times} ms`);
+
+        var time = process.uptime();
+        for (let i = 0; i < times; i++) {
+            result = await ObjectUser.count(ORM.Logic.whereBetween('.money', 1, 111));
+        }
+        console.log(`object-count-where(between): ${(process.uptime() - time) * 1000 / times} ms`);
+    });
+
     it('[object-find-where]', async function() {
         this.timeout(100000000);
         await Promise.all([
@@ -163,19 +234,19 @@ describe('#time', function () {
 
         var time = process.uptime();
         for (let i = 0; i < times; i++) {
-            await ObjectUser.find({where: ORM.Logic.whereOperator('.id', '=', Users[0].id)});
+            await ObjectUser.find({where: ORM.Logic.whereEq('.id', Users[0].id)});
         }
         console.log(`object-find-where-find(operator id): ${(process.uptime() - time) * 1000 / times} ms`);
 
         var time = process.uptime();
         for (let i = 0; i < times; i++) {
-            await ObjectUser.find({where: ORM.Logic.whereOperator('.name', '=', Users[0].name)});
+            await ObjectUser.find({where: ORM.Logic.whereEq('.name', Users[0].name)});
         }
         console.log(`object-find-where-find(operator name): ${(process.uptime() - time) * 1000 / times} ms`);
 
         var time = process.uptime();
         for (let i = 0; i < times; i++) {
-            await ObjectUser.find({where: ORM.Logic.whereNot(ORM.Logic.whereOperator('.name', '=',  Users[0].name))});
+            await ObjectUser.find({where: ORM.Logic.whereNot(ORM.Logic.whereEq('.name', Users[0].name))});
         }
         console.log(`object-find-where-find(not): ${(process.uptime() - time) * 1000 / times} ms`);
 
@@ -188,8 +259,8 @@ describe('#time', function () {
         var time = process.uptime();
         for (let i = 0; i < times; i++) {
             await ObjectUser.find({where: ORM.Logic.whereAnd(
-                ORM.Logic.whereOperator('.name', '=', Users[0].name),
-                ORM.Logic.whereOperator('.id', '=', Users[0].id)
+                ORM.Logic.whereEq('.name', Users[0].name),
+                ORM.Logic.whereEq('.id', Users[0].id)
             )});
         }
         console.log(`object-find-where-find(and): ${(process.uptime() - time) * 1000 / times} ms`);
@@ -197,8 +268,8 @@ describe('#time', function () {
         var time = process.uptime();
         for (let i = 0; i < times; i++) {
             await ObjectUser.find({where: ORM.Logic.whereOr(
-                ORM.Logic.whereOperator('.name', '=', Users[0].name),
-                ORM.Logic.whereOperator('.name', '=', Users[1].name)
+                ORM.Logic.whereEq('.name',  Users[0].name),
+                ORM.Logic.whereEq('.name', Users[1].name)
             )});
         }
         console.log(`object-find-where-find(or): ${(process.uptime() - time) * 1000 / times} ms`);
@@ -304,6 +375,12 @@ describe('#time', function () {
             await RelationUserMessage.count(Users[0].id);
         }
         console.log(`relation-count: ${(process.uptime() - time) * 1000 / times} ms`);
+
+        var time = process.uptime();
+        for (let i = 0; i < times; i++) {
+            await RelationUserMessage.count(Users[0].id, ORM.Logic.whereEq('.status', 2));
+        }
+        console.log(`relation-filter-count: ${(process.uptime() - time) * 1000 / times} ms`);
     });
 
     it('[relation-list]', async function() {
@@ -316,6 +393,12 @@ describe('#time', function () {
             await RelationUserMessage.list(Users[0].id);
         }
         console.log(`relation-list: ${(process.uptime() - time) * 1000 / times} ms`);
+
+        var time = process.uptime();
+        for (let i = 0; i < times; i++) {
+            await RelationUserMessage.list(Users[0].id, undefined, undefined, ORM.Logic.whereEq('.status', 2));
+        }
+        console.log(`relation-list-filter: ${(process.uptime() - time) * 1000 / times} ms`);
 
         var time = process.uptime();
         for (let i = 0; i < times; i++) {

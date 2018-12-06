@@ -3,7 +3,8 @@ module.exports = class {
         this._connParam = connParam;
         this._indexes = indexes;
         this._support = {
-            find: false,
+            objectFind: false,
+            objectCount: false,
             objectArrayNodeAppend: false,
             objectArrayNodeUnshift: false,
             objectArrayNodeInsert: false,
@@ -61,7 +62,11 @@ module.exports = class {
         throw new Error('this method is supposed to be implemented by subclass');
     }
 
-    async find(where = undefined, sort = undefined, limit = undefined) {
+    async objectFind(where = undefined, sort = undefined, limit = undefined) {
+        throw new Error('this method is supposed to be implemented by subclass');
+    }
+
+    async objectCount(where = undefined) {
         throw new Error('this method is supposed to be implemented by subclass');
     }
 
@@ -81,11 +86,11 @@ module.exports = class {
         throw new Error('this method is supposed to be implemented by subclass');
     }
 
-    async relationList(subject, sort = undefined, limit = undefined) {
+    async relationList(subject, sort = undefined, limit = undefined, filter = undefined) {
         throw new Error('this method is supposed to be implemented by subclass');
     }
      
-    async relationCount(subject) {
+    async relationCount(subject,filter) {
         throw new Error('this method is supposed to be implemented by subclass');
     }
 

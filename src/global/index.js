@@ -6,7 +6,7 @@ module.exports = {
     removeSchemaUndefinedProperties: false,
     indexes: {},
     medias : {
-        [require('../lib/router/backend/mysql').media]: require('../lib/router/backend/mysql'),
-        [require('../lib/router/backend/redis').media]: require('../lib/router/backend/redis'),
+        [require('../module/router/backend/mysql').media]: require('../module/router/backend/mysql'),
+        [require('../module/router/backend/redis').media]: require('../module/router/backend/redis'),
     }
 };

@@ -19,7 +19,7 @@
     "mocha": "^5.2.0",
     "mysql": "^2.16.0",
     "opts": "^1.2.6",
-    "process-key-mutex": "^1.0.0",
+    "process-key-mutex": "^1.0.1",
     "redis": "^2.8.0",
     "uuid": "^3.3.2"
   },

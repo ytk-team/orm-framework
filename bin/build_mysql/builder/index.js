@@ -1,7 +1,7 @@
 const Mysql = require('mysql');
 const assert = require('assert');
-const Index = require('../../../src/lib/index');
-const Sugar = require('../../../src/lib/sugar');
+const Index = require('../../../src/module/index');
+const Sugar = require('../../../src/module/sugar');
 module.exports = class {
     constructor(type, schemaDir, routerDir, moduleName) {
         this._type = type;

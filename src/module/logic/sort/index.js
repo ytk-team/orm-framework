@@ -14,9 +14,4 @@ module.exports = class Sort extends Base {
     get order() {
         return this._order;
     }
-    
-    toMysqlParams(tableName) {
-        let columnName = this.getColumnName(tableName, this._field);
-        return `${columnName} ${this._order}`;
-    }
 }

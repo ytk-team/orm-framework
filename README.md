@@ -208,7 +208,7 @@ console.log(await ObjectMessage.del(message.id));
     - **length(value)** : string length limit
     - **pattern(value)** : string must match the regex
     - **if...then...elseIf...else...endIf** : target object can has different properties/patternProperties/require in different properties/patternProperties situation
-    - **index()** : set index for the field, only keyword **``string``, ``integer``, ``number``** can support index, and if keyword ``string``, you must set the ``length`` or ``maxLength`` for the field. **tip: the object ``id``, the relation ``subject`` is be set index by default** 
+    - **index()** : set index for the field, only keyword **``string``, ``integer``, ``number``** can support index, and if keyword ``string``, you must set the ``length`` or ``maxLength`` for the field. **tip: the object ``id``, the relation ``subject``, ``${subject}_${object}`` is be set index by default. so object ``id``, relation ``subject``, ``object`` must set length or maxLength if type is ``string``** 
 
 - Sugar
 
@@ -255,7 +255,7 @@ module.exports = {
 
 ```javascript
 module.exports = object({
-    subject: string(),
+    subject: string().length(32),
     object: integer(),
     status: integer().enum(0, 1, 2).desc('0:未读; 1:已读; 2:已删'),
     readTime: integer().default(0),
@@ -550,3 +550,7 @@ await ObjectMessage.set(message);
 
 ## Acknowledge
 schema definition grammar is base in part on the source code of the [semantic-schema](https://www.npmjs.com/package/semantic-schema) project
+
+
+objectFind,objectCount,relationList,relationCount暂不支持热迁移及，会影响性能
+自动填充数据在数据查询之后，故禁止对自动填充字段做object的find(除limit),count,arrayNodeAppend，arrayNodeUnshift,arrayNodeInsert,arrayNodeDel,arrayNodePop,arrayNodeShift;relation的list(除limit),count

@@ -1,9 +1,13 @@
+const assert = require('assert');
 const Pool = require('./pool');
+const {Type} = require('../../../logic');
+
 module.exports = class extends require('../base.js') {
     constructor(connParam, indexes) {
         super(connParam, indexes);
         this._support = {
-            find: false,
+            objectFind: false,
+            objectCount: false,
             objectArrayNodeAppend: true,
             objectArrayNodeUnshift: true,
             objectArrayNodeInsert: true,
@@ -38,7 +42,8 @@ module.exports = class extends require('../base.js') {
     async objectArrayNodeAppend(id, path, items) {
         await this._mutex.lock(`${this._connParam.bucket}.${id}`, async() => {
             let value = await this.objectGet(id);
-            this._getNode(value, path).push(...items);
+            assert(value != undefined, 'can not find record');
+            this._getNodeValue(value, path).push(...items);
             await this.objectSet(id, value);
         });
     }
@@ -46,7 +51,8 @@ module.exports = class extends require('../base.js') {
     async objectArrayNodeUnshift(id, path, items) {
         await this._mutex.lock(`${this._connParam.bucket}.${id}`, async() => {
             let value = await this.objectGet(id);
-            let array = this._getNode(value, path)
+            assert(value != undefined, 'can not find record');
+            let array = this._getNodeValue(value, path)
             items.forEach(item => array.unshift(item));
             await this.objectSet(id, value);
         });
@@ -55,7 +61,8 @@ module.exports = class extends require('../base.js') {
     async objectArrayNodeInsert(id, path, index, item) {
         await this._mutex.lock(`${this._connParam.bucket}.${id}`, async() => {
             let value = await this.objectGet(id);
-            this._getNode(value, path).splice(index, 0, item);
+            assert(value != undefined, 'can not find record');
+            this._getNodeValue(value, path).splice(index, 0, item);
             await this.objectSet(id, value);
         });
     }
@@ -63,7 +70,8 @@ module.exports = class extends require('../base.js') {
     async objectArrayNodeDel(id, path, index) {
         await this._mutex.lock(`${this._connParam.bucket}.${id}`, async() => {
             let value = await this.objectGet(id);
-            this._getNode(value, path).splice(index, 1);
+            assert(value != undefined, 'can not find record');
+            this._getNodeValue(value, path).splice(index, 1);
             await this.objectSet(id, value);
         });
     }
@@ -71,7 +79,8 @@ module.exports = class extends require('../base.js') {
     async objectArrayNodePop(id, path) {
         return await this._mutex.lock(`${this._connParam.bucket}.${id}`, async() => {
             let value = await this.objectGet(id);
-            let item = this._getNode(value, path).pop();
+            assert(value != undefined, 'can not find record');
+            let item = this._getNodeValue(value, path).pop();
             await this.objectSet(id, value);
             return item;
         });
@@ -80,7 +89,8 @@ module.exports = class extends require('../base.js') {
     async objectArrayNodeShift(id, path) {
         return await this._mutex.lock(`${this._connParam.bucket}.${id}`, async() => {
             let value = await this.objectGet(id);
-            let item = this._getNode(value, path).shift();
+            assert(value != undefined, 'can not find record');
+            let item = this._getNodeValue(value, path).shift();
             await this.objectSet(id, value);
             return item;
         });
@@ -103,11 +113,13 @@ module.exports = class extends require('../base.js') {
         await this._execute('hdel', `${this._connParam.bucket}.${subject}`, object);
     }
 
-    async relationList(subject, sort = undefined, limit = undefined) {
+    async relationList(subject, sort = undefined, limit = undefined, filter = undefined) {
         let list = (await this._execute('hvals', `${this._connParam.bucket}.${subject}`)).map(_ => JSON.parse(_));
+        if (filter != undefined) list = list.filter(_ => this._assert(filter, _));
         if (sort != undefined) {
-            let {field, order} = sort;
-            list.sort((l, r) => order == "ASC" ? this._getNode(l, field) - this._getNode(r, field) : this._getNode(r, field) - this._getNode(l, field));
+            [].concat(sort).map(({field, order}) => {
+                list.sort((l, r) => order == "ASC" ? this._getNodeValue(l, field) - this._getNodeValue(r, field) : this._getNodeValue(r, field) - this._getNodeValue(l, field));
+            })
         }
         if (limit != undefined) {
             list = list.slice(limit.skip, limit.skip + limit.limit);
@@ -115,8 +127,13 @@ module.exports = class extends require('../base.js') {
         return list;
     }
 
-    async relationCount(subject) {
-        return await this._execute('hlen', `${this._connParam.bucket}.${subject}`);
+    async relationCount(subject, filter = undefined) {
+        if (filter == undefined) {
+            return await this._execute('hlen', `${this._connParam.bucket}.${subject}`);
+        }
+        else {
+            return (await this.relationList(subject, undefined, undefined, filter)).length;
+        }
     }
 
     async relationClear(subject) {
@@ -133,7 +150,7 @@ module.exports = class extends require('../base.js') {
         })
     }
 
-    _getNode(object, path) {
+    _getNodeValue(object, path) {
         return path.split('.').slice(1).reduce((prev, curr) => {
             if (curr == '') return prev;
             if (/\[(\d+)\]/.test(curr)) {
@@ -143,5 +160,65 @@ module.exports = class extends require('../base.js') {
                 return object[curr];
             }
         }, object);
+    }
+
+    _assert(where, item) {
+        if (where instanceof Type.WhereAnd) {
+            return where.items.every(_ => this._assert(_, item));
+        }
+        else if (where instanceof Type.WhereOr) {
+            return where.items.some(_ => this._assert(_, item));
+        }
+        else if (where instanceof Type.WhereNot) {
+            return !this._assert(where.item, item);
+        }
+        else if (where instanceof Type.WhereIn) {
+            return where.items.includes(this._getNodeValue(item, where.field));
+        }
+        else if (where instanceof Type.WhereBetween) {
+            let value = this._getNodeValue(item, where.field);
+            return value >= where.from && value <= where.to;
+        }
+        else if (where instanceof Type.WhereLike) {
+            let escape = false;
+            let context = where.value.replace(/\\\\\\\\/g, "\\\\")
+                .split('')
+                .map((value, index, arr) => {
+                    switch(value) {
+                        case "_":
+                            var _ = index == 0 || escape == false ? '(.{1})' : value;
+                            if (escape) escape = !escape;
+                            return _;
+                        case "%":
+                            var _ = index == 0 || escape == false ? '(.*)' : value;
+                            if (escape) escape = !escape;
+                            return _;
+                        case "\\":
+                            escape = !escape;
+                        default:
+                            return value;
+                    }
+                }).join('');
+            let regex = new RegExp(`${['%', '_'].includes(where.value.substr(0, 1))  ? "" : "^"}${context}${['%', '_'].includes(where.value.substr(-1, 1)) ? "" : "$"}`);
+            return regex.test(this._getNodeValue(item, where.field));
+        }
+        else if (where instanceof Type.WhereEq) {
+            return eval(`${this._getNodeValue(item, where.field)} == ${where.value}`);
+        }
+        else if (where instanceof Type.WhereNq) {
+            return eval(`${this._getNodeValue(item, where.field)} <> ${where.value}`);
+        }
+        else if (where instanceof Type.WhereGe) {
+            return eval(`${this._getNodeValue(item, where.field)} >= ${where.value}`);
+        }
+        else if (where instanceof Type.WhereGt) {
+            return eval(`${this._getNodeValue(item, where.field)} > ${where.value}`);
+        }
+        else if (where instanceof Type.WhereLe) {
+            return eval(`${this._getNodeValue(item, where.field)} <= ${where.value}`);
+        }
+        else if (where instanceof Type.WhereLt) {
+            return eval(`${this._getNodeValue(item, where.field)} < ${where.value}`);
+        }
     }
 };

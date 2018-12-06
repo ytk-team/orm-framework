@@ -2,8 +2,10 @@ const assert = require('assert');
 const uuid = require('uuid');
 const ORM = require('../');
 ORM.setup({
-	objectPath: `${__dirname}/config/object`,
-    relationPath: `${__dirname}/config/relation`,
+    objectSchemaPath: `${__dirname}/config/object/schema`,
+    objectRouterPath: `${__dirname}/config/object/router`,
+    relationSchemaPath: `${__dirname}/config/relation/schema`,
+    relationRouterPath: `${__dirname}/config/relation/router`,
     removeSchemaUndefinedProperties: false
 });
 const ObjectUser = new ORM.Object('user');
@@ -109,6 +111,44 @@ describe('#basic', function () {
         assert(friend1Id == friend1.fid && (await ObjectUser.get(Users[0].id)).friends.length == 1, `object array shift failed`);
     });
 
+    it('[object-count]', async function() {
+        await Promise.all([
+            ObjectUser.set(Users[0]), 
+            ObjectUser.set(Users[1]), 
+            ObjectUser.set(Users[2])
+        ]);
+        assert((await ObjectUser.count()) == 3, `object count failed`);
+        let result = await ObjectUser.count(ORM.Logic.whereEq('.id', Users[0].id));
+        assert(result == 1, `object count = failed`);
+
+        result = await ObjectUser.count(ORM.Logic.whereEq('.name', Users[0].name));
+        assert(result == 1, `object count name = failed`);
+
+        result = await ObjectUser.count(ORM.Logic.whereNot(ORM.Logic.whereEq('.name' ,Users[0].name)));
+        assert(result == 2, `object count not failed`);
+        
+        result = await ObjectUser.count(ORM.Logic.whereIn('.name', Users[0].name, Users[1].name));
+        assert(result == 2, `object count in failed`);
+        
+        result = await ObjectUser.count(ORM.Logic.whereAnd(
+            ORM.Logic.whereEq('.name', Users[0].name),
+            ORM.Logic.whereEq('.id', Users[0].id)
+        ));
+        assert(result == 1, `object count and failed`);
+
+        result = await ObjectUser.count(ORM.Logic.whereOr(
+            ORM.Logic.whereEq('.name', Users[0].name),
+            ORM.Logic.whereEq('.name', Users[1].name)
+        ));
+        assert(result == 2, `object count or failed`);
+
+        result = await ObjectUser.count(ORM.Logic.whereLike('.name', `%${Users[0].name.substr(1, 3)}%`));
+        assert(result == 1, `object count like failed`);
+
+        result = await ObjectUser.count(ORM.Logic.whereBetween('.money', 1, 111));
+        assert(result == 1, `object count between failed`);
+    });
+
     it('[object-find-where]', async function() {
         await Promise.all([
             ObjectUser.set(Users[0]), 
@@ -116,27 +156,27 @@ describe('#basic', function () {
             ObjectUser.set(Users[2])
         ]);
         assert((await ObjectUser.find()).length == 3, `object find where [.find()] failed`);
-        let result = await ObjectUser.find({where: ORM.Logic.whereOperator('.id', '=', Users[0].id)});
+        let result = await ObjectUser.find({where: ORM.Logic.whereEq('.id', Users[0].id)});
         assert(result.length == 1 && result[0].id == Users[0].id, `object find where [.find(id where operator =)] failed`);
 
-        result = await ObjectUser.find({where: ORM.Logic.whereOperator('.name', '=', Users[0].name)});
+        result = await ObjectUser.find({where: ORM.Logic.whereEq('.name', Users[0].name)});
         assert(result.length == 1 && result[0].id == Users[0].id, `object find where [.find(name where operator =)] failed`);
 
-        result = await ObjectUser.find({where: ORM.Logic.whereNot(ORM.Logic.whereOperator('.name', '=',  Users[0].name))});
+        result = await ObjectUser.find({where: ORM.Logic.whereNot(ORM.Logic.whereEq('.name',  Users[0].name))});
         assert(result.length == 2 && [Users[2].id, Users[1].id].includes(result[0].id) && [Users[2].id, Users[1].id].includes(result[1].id), `object find where [.find(where not)] failed`);
         
         result = await ObjectUser.find({where: ORM.Logic.whereIn('.name', Users[0].name, Users[1].name)});
         assert(result.length == 2 && [Users[0].id, Users[1].id].includes(result[0].id) && [Users[0].id, Users[1].id].includes(result[1].id), `object find where [.find(where in)] failed`);
         
         result = await ObjectUser.find({where: ORM.Logic.whereAnd(
-            ORM.Logic.whereOperator('.name', '=', Users[0].name),
-            ORM.Logic.whereOperator('.id', '=', Users[0].id)
+            ORM.Logic.whereEq('.name', Users[0].name),
+            ORM.Logic.whereEq('.id', Users[0].id)
         )});
         assert(result.length == 1 && result[0].id == Users[0].id, `object find where [.find(id where and)] failed`);
 
         result = await ObjectUser.find({where: ORM.Logic.whereOr(
-            ORM.Logic.whereOperator('.name', '=', Users[0].name),
-            ORM.Logic.whereOperator('.name', '=', Users[1].name)
+            ORM.Logic.whereEq('.name', Users[0].name),
+            ORM.Logic.whereEq('.name', Users[1].name)
         )});
         assert(result.length == 2 && [Users[0].id, Users[1].id].includes(result[0].id) && [Users[0].id, Users[1].id].includes(result[1].id), `object find where [.find(where or)] failed`);
 
@@ -155,6 +195,9 @@ describe('#basic', function () {
         ]);
         let [{id: user3Id}, {id: user2Id}, {id: user1Id}] = await ObjectUser.find({sort: ORM.Logic.sort('.id', "desc")});
         assert(user1Id == Users[0].id && user2Id == Users[1].id && user3Id == Users[2].id, `object find sort failed`);
+
+        [{id: user3Id}, {id: user1Id}, {id: user2Id}] = await ObjectUser.find({sort: [ORM.Logic.sort('.gender', "desc"), ORM.Logic.sort('.id', "asc")]});
+        assert(user1Id == Users[0].id && user2Id == Users[1].id && user3Id == Users[2].id, `object find double sort failed`);
     });
 
     it('[object-find-skip-limit]', async function() {
@@ -197,6 +240,50 @@ describe('#basic', function () {
         await RelationUserMessage.put(UserMessages[0]);
         await RelationUserMessage.put(UserMessages[1]);
         assert(await RelationUserMessage.count(Users[0].id) === 2, 'relation count failed');
+        let filter = ORM.Logic.whereEq('.status', 2);
+        assert(await RelationUserMessage.count(Users[0].id, filter) === 1, 'relation count filter = failed');
+
+        filter = ORM.Logic.whereIn('.status', 1, 2);
+        assert(await RelationUserMessage.count(Users[0].id, filter) === 2, 'relation count filter in failed');
+
+        filter = ORM.Logic.whereBetween('.status', 0, 2);
+        assert(await RelationUserMessage.count(Users[0].id, filter) === 2, 'relation count filter between failed');
+
+        filter = ORM.Logic.whereAnd(ORM.Logic.whereEq('.status', 1), ORM.Logic.whereEq('.status', 2));
+        assert(await RelationUserMessage.count(Users[0].id, filter) === 0, 'relation count filter where failed');
+
+        filter = ORM.Logic.whereOr(ORM.Logic.whereEq('.status', 1), ORM.Logic.whereEq('.status', 2));
+        assert(await RelationUserMessage.count(Users[0].id, filter) === 2, 'relation count filter or failed');
+
+        filter = ORM.Logic.whereNot(ORM.Logic.whereEq('.status', 1));
+        assert(await RelationUserMessage.count(Users[0].id, filter) === 1, 'relation count filter not failed');
+
+        filter = ORM.Logic.whereLike('.text', '%a%');
+        assert(await RelationUserMessage.count(Users[0].id, filter) === 2, 'relation count filter like %a% failed');
+
+        filter = ORM.Logic.whereLike('.text', 'a%');
+        assert(await RelationUserMessage.count(Users[0].id, filter) === 1, 'relation count filter like a% failed');
+
+        filter = ORM.Logic.whereLike('.text', 'a');
+        assert(await RelationUserMessage.count(Users[0].id, filter) === 0, 'relation count filter like a failed');
+
+        filter = ORM.Logic.whereLike('.text', 'a%d');
+        assert(await RelationUserMessage.count(Users[0].id, filter) === 1, 'relation count filter like a%d failed');
+
+        filter = ORM.Logic.whereLike('.text', '_bcd');
+        assert(await RelationUserMessage.count(Users[0].id, filter) === 1, 'relation count filter like _bcd failed');
+
+        filter = ORM.Logic.whereLike('.text', 'ab_d');
+        assert(await RelationUserMessage.count(Users[0].id, filter) === 1, 'relation count filter like ab_d failed');
+
+        filter = ORM.Logic.whereLike('.text', 'abc_');
+        assert(await RelationUserMessage.count(Users[0].id, filter) === 1, 'relation count filter like abc_ failed');
+
+        filter = ORM.Logic.whereLike('.text', '%bc_');
+        assert(await RelationUserMessage.count(Users[0].id, filter) === 1, 'relation count filter like %bc_ failed');
+
+        filter = ORM.Logic.whereLike('.text', 'abcd');
+        assert(await RelationUserMessage.count(Users[0].id, filter) === 1, 'relation count filter like abcd failed');
     });
 
     it('[relation-list]', async function() {
@@ -213,6 +300,76 @@ describe('#basic', function () {
 
         result = await RelationUserMessage.list(Users[0].id, ORM.Logic.sort('.status', "DESC"), ORM.Logic.limit(1, 1));
         assert(result.length == 1 && result[0].status == UserMessages[0].status, 'relation list sort limit skip failed');
+
+
+        result = await RelationUserMessage.list(Users[0].id, ORM.Logic.sort('.status', "DESC"), undefined, ORM.Logic.whereEq('.status', 2));
+        assert(result.length == 1 && result[0].status == UserMessages[1].status, 'relation list filter sort failed');
+
+        result = await RelationUserMessage.list(Users[0].id, ORM.Logic.sort('.status', "DESC"), ORM.Logic.limit(1), ORM.Logic.whereEq('.status', 2));
+        assert(result.length == 1 && result[0].status == UserMessages[1].status, 'relation list filter sort limit failed');
+
+        result = await RelationUserMessage.list(Users[0].id, ORM.Logic.sort('.status', "DESC"), ORM.Logic.limit(1, 1), ORM.Logic.whereEq('.status', 2));
+        assert(result.length == 0, 'relation list filter sort limit skip failed');
+
+        let filter = ORM.Logic.whereEq('.status', 2);
+        result = await RelationUserMessage.list(Users[0].id, undefined, undefined, filter);
+        assert(result[0].id === UserMessages[1].id, 'relation list filter = failed');
+
+        filter = ORM.Logic.whereIn('.status', 1, 2);
+        result = await RelationUserMessage.list(Users[0].id, undefined, undefined, filter);
+        assert(result.length === 2, 'relation list filter in failed');
+
+        filter = ORM.Logic.whereBetween('.status', 0, 2);
+        result = await RelationUserMessage.list(Users[0].id, undefined, undefined, filter);
+        assert(result.length === 2, 'relation list filter between failed');
+
+        filter = ORM.Logic.whereAnd(ORM.Logic.whereEq('.status', 1), ORM.Logic.whereEq('.status', 2));
+        result = await RelationUserMessage.list(Users[0].id, undefined, undefined, filter);
+        assert(result.length === 0, 'relation list filter where failed');
+
+        filter = ORM.Logic.whereOr(ORM.Logic.whereEq('.status', 1), ORM.Logic.whereEq('.status', 2));
+        result = await RelationUserMessage.list(Users[0].id, undefined, undefined, filter);
+        assert(result.length === 2, 'relation list filter or failed');
+
+        filter = ORM.Logic.whereNot(ORM.Logic.whereEq('.status', 1));
+        result = await RelationUserMessage.list(Users[0].id, undefined, undefined, filter);
+        assert(result[0].text === 'dcba', 'relation list filter not failed');
+
+        filter = ORM.Logic.whereLike('.text', '%a%');
+        result = await RelationUserMessage.list(Users[0].id, undefined, undefined, filter);
+        assert(result.length === 2, 'relation list filter like %a% failed');
+
+        filter = ORM.Logic.whereLike('.text', 'a%');
+        result = await RelationUserMessage.list(Users[0].id, undefined, undefined, filter);
+        assert(result[0].text === 'abcd', 'relation list filter like a% failed');
+
+        filter = ORM.Logic.whereLike('.text', 'a');
+        result = await RelationUserMessage.list(Users[0].id, undefined, undefined, filter);
+        assert(result.length === 0, 'relation list filter like a failed');
+
+        filter = ORM.Logic.whereLike('.text', 'a%d');
+        result = await RelationUserMessage.list(Users[0].id, undefined, undefined, filter);
+        assert(result[0].text === 'abcd', 'relation list filter like a%d failed');
+
+        filter = ORM.Logic.whereLike('.text', '_bcd');
+        result = await RelationUserMessage.list(Users[0].id, undefined, undefined, filter);
+        assert(result[0].text === 'abcd', 'relation list filter like _bcd failed');
+
+        filter = ORM.Logic.whereLike('.text', 'ab_d');
+        result = await RelationUserMessage.list(Users[0].id, undefined, undefined, filter);
+        assert(result[0].text === 'abcd', 'relation list filter like ab_d failed');
+
+        filter = ORM.Logic.whereLike('.text', 'abc_');
+        result = await RelationUserMessage.list(Users[0].id, undefined, undefined, filter);
+        assert(result[0].text === 'abcd', 'relation list filter like abc_ failed');
+
+        filter = ORM.Logic.whereLike('.text', '%bc_');
+        result = await RelationUserMessage.list(Users[0].id, undefined, undefined, filter);
+        assert(result[0].text === 'abcd', 'relation list filter like %bc_ failed');
+
+        filter = ORM.Logic.whereLike('.text', 'abcd');
+        result = await RelationUserMessage.list(Users[0].id, undefined, undefined, filter);
+        assert(result[0].text === 'abcd', 'relation list filter like abcd failed');
     })
 
     it('[relation-clear', async function() {

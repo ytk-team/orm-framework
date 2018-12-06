@@ -2,14 +2,15 @@ const Pool = require('./pool');
 const assert = require('assert');
 const Mysql = require('mysql');
 const uuid = require('uuid').v4;
-const {whereOperator, Type} = require('../../../logic');
+const {whereEq, whereNq, whereGe, whereGt, whereLe, whereLt, whereAnd, Type} = require('../../../logic');
 
 
 module.exports = class extends require('../base.js') {
     constructor(connParam, indexes) {
         super(connParam, indexes);
         this._support = {
-            find: true,
+            objectFind: true,
+            objectCount: true,
             objectArrayNodeAppend: true,
             objectArrayNodeUnshift: true,
             objectArrayNodeInsert: true,
@@ -65,23 +66,25 @@ module.exports = class extends require('../base.js') {
         return this.objectDel(`${subject}_${object}`);
     }
 
-    async relationList(subject, sort = undefined, limit = undefined) {
-        return this.find({
-            where: whereOperator('.subject', '=', subject),
+    async relationList(subject, sort = undefined, limit = undefined, filter = undefined) {
+        return this.objectFind({
+            where: filter == undefined ? whereEq('.subject', subject) : whereAnd(whereEq('.subject', subject), filter),
             sort,
             limit
         });
     }
 
-    async relationCount(subject) {
-        let {query, binds} = this._parseWhereToMysql(whereOperator('.subject', '=', subject));
+    async relationCount(subject, filter = undefined) {
+        let {query, binds} = this._parseWhereToMysql(
+            filter == undefined ? whereEq('.subject', subject) : whereAnd(whereEq('.subject', subject), filter)
+        );
         let sql = Mysql.format(`SELECT count(_id) as count FROM ?? WHERE ${query}`, [this._connParam.table]);
         let [{count}] = await this._execute(sql, binds);
         return count;
     }
 
     async relationClear(subject) {
-        let {query, binds} = this._parseWhereToMysql(whereOperator('.subject', '=', subject));
+        let {query, binds} = this._parseWhereToMysql(whereEq('.subject', subject));
         const sql = Mysql.format(`DELETE FROM ?? WHERE ${query}`, [this._connParam.table]);
         await this._execute(sql, binds);
     }
@@ -134,7 +137,7 @@ module.exports = class extends require('../base.js') {
         })
     }
 
-    async find({where = undefined, sort = undefined, limit = undefined}) {
+    async objectFind({where = undefined, sort = undefined, limit = undefined}) {
         let sql = '';
         let whereSql = '';
         let sortSql = '';
@@ -144,7 +147,7 @@ module.exports = class extends require('../base.js') {
             whereSql = `WHERE ${query}`;
         }
         if (sort != undefined) {
-            sortSql = `ORDER BY ${this._parseSortToMysql(sort)}`;
+            sortSql = `ORDER BY ${[].concat(sort).map(_ => this._parseSortToMysql(_)).join(',')}`;
         }
         if (limit != undefined) {
             let subSql = Mysql.format(`SELECT _id FROM ?? ${whereSql} ${sortSql} ${this._parseLimitToMysql(limit)}`, [this._connParam.table]);
@@ -158,6 +161,19 @@ module.exports = class extends require('../base.js') {
             delete row._id;
             return row;
         });
+    }
+
+    async objectCount(where = undefined) {
+        let sql = '';
+        let whereSql = '';
+        var binds = {};
+        if (where != undefined) {
+            var {query, binds} = this._parseWhereToMysql(where);
+            whereSql = `WHERE ${query}`;
+        }
+        sql = Mysql.format(`SELECT COUNT(_id) as count FROM ?? ${whereSql}`, [this._connParam.table]);
+        let [{count}] = await this._execute(sql, binds);
+        return count;
     }
 
     async _execute(sql, params = {}) {
@@ -237,12 +253,53 @@ module.exports = class extends require('../base.js') {
                 binds: totalBinds
             }
         }
-        else if (where instanceof Type.WhereOperator) {
+        else if (where instanceof Type.WhereEq) {
             let columnName = this._getColumnName(where.field);
             let placeholder = `_${uuid().replace(/\-/g, "")}`;
             totalBinds[placeholder] = where.value;
             return {
-                query: `${columnName} ${where.op} :${placeholder}`,
+                query: `${columnName} = :${placeholder}`,
+                binds: totalBinds
+            }
+        }
+        else if (where instanceof Type.WhereNq) {
+            let columnName = this._getColumnName(where.field);
+            let placeholder = `_${uuid().replace(/\-/g, "")}`;
+            totalBinds[placeholder] = where.value;
+            return {
+                query: `${columnName} != :${placeholder}`,
+                binds: totalBinds
+            }
+        }else if (where instanceof Type.WhereGe) {
+            let columnName = this._getColumnName(where.field);
+            let placeholder = `_${uuid().replace(/\-/g, "")}`;
+            totalBinds[placeholder] = where.value;
+            return {
+                query: `${columnName} >= :${placeholder}`,
+                binds: totalBinds
+            }
+        }else if (where instanceof Type.WhereGt) {
+            let columnName = this._getColumnName(where.field);
+            let placeholder = `_${uuid().replace(/\-/g, "")}`;
+            totalBinds[placeholder] = where.value;
+            return {
+                query: `${columnName} > :${placeholder}`,
+                binds: totalBinds
+            }
+        }else if (where instanceof Type.WhereLe) {
+            let columnName = this._getColumnName(where.field);
+            let placeholder = `_${uuid().replace(/\-/g, "")}`;
+            totalBinds[placeholder] = where.value;
+            return {
+                query: `${columnName} <= :${placeholder}`,
+                binds: totalBinds
+            }
+        }else if (where instanceof Type.WhereLt) {
+            let columnName = this._getColumnName(where.field);
+            let placeholder = `_${uuid().replace(/\-/g, "")}`;
+            totalBinds[placeholder] = where.value;
+            return {
+                query: `${columnName} < :${placeholder}`,
                 binds: totalBinds
             }
         }

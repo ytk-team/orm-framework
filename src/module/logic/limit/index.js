@@ -14,8 +14,4 @@ module.exports = class Limit extends Base {
     get skip() {
         return this._skip;
     }
-    
-    toMysqlParams() {
-        return `LIMIT ${this._skip}, ${this._limit}`;
-    }
 }

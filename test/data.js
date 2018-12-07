@@ -5,6 +5,7 @@ module.exports = {
             object: 1,
             status: 1,
             text: "abcd",
+            arr: ["abc", "poi"],
             readTime: 1516538014
         },
         {
@@ -12,6 +13,7 @@ module.exports = {
             object: 2,
             status: 2,
             text: "dcba",
+            arr: ["qwe", "poi"],
             deletedTime: 1516538014
         }
     ],

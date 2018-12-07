@@ -4,7 +4,7 @@ module.exports = class NumberSchema extends BaseSchema {
     constructor() {
         super();
         this._current.set('type', 'number');
-        this._current.set('getIndexInfo', () => ({type: 'number', length: 8}));
+        this._current.set('getIndexInfo', (needCheckLength) => ({type: 'number', length: 8}));
     }
 
     enum(...enumArr) {

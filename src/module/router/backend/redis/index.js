@@ -153,11 +153,14 @@ module.exports = class extends require('../base.js') {
     _getNodeValue(object, path) {
         return path.split('.').slice(1).reduce((prev, curr) => {
             if (curr == '') return prev;
-            if (/\[(\d+)\]/.test(curr)) {
+            if (/\[\*\]/.test(curr)) { //[*]获取数组所有元素
+                return object[curr.substring(0, curr.length - 3)];
+            }
+            else if (/\[(\d+)\]/.test(curr)) {
                 return object[parseInt(curr.match(/\[(\d+)\]/)[1])];
             }
             else {
-                return object[curr];
+                return typeof object === "array" ? object.map(_ => _[curr]) : object[curr];
             }
         }, object);
     }
@@ -219,6 +222,9 @@ module.exports = class extends require('../base.js') {
         }
         else if (where instanceof Type.WhereLt) {
             return eval(`${this._getNodeValue(item, where.field)} < ${where.value}`);
+        }
+        else if (where instanceof Type.WhereContain) {
+            return this._getNodeValue(item, where.field).includes(where.value);
         }
     }
 };

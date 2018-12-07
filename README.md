@@ -1,71 +1,130 @@
 # qtk-orm-framework
 
-qtk-orm-framework is an orm database framework, support mysql and redis. This framework aim at providing a single and simple api to describe/operate with k-v type data in both cache and relationship databases. Developer what need to do is just write a data structure schema, and router (means the configuration of database server), and then the framework will help you to build mysql table, create/read/update/delete/transfer data simplify.
+qtk-orm-framework是一个Node版的K-V型数据操作框架，支持一对一，一对多两种关系，存储目前支持**Mysql**、**Redis**两种类型．框架致力于提供一套简单的API去操作K-V结构数据，使用者只需定义一份**数据描述文件**及**数据库配置文件**,框架将会帮你实现**建库建表(Mysql)**、**建索引(Mysql)**、**增删改查**、**数据分表分库**、**数据校验**、**数据缓存**、**数据热迁移**． 
+框架有两个核心概念``Object``、``Relation``
+- Object: 存储一对一关系的实体，可以将其理解为Document(文档)，数据中必须包含``id``字段，主键为``id``
+- Relation: 存储一对多关系的实体，可以将其理解为Collection(容器)，一个容器里面有多个Document(文档)，数据中必须包含``subject``、``object``字段，``subject``为容器id,``object``为文档id,主键为``${subject}_${object}``
+## 安装
+``` shell
+＃in your project
+npm install @qtk/orm-framework --save
+# install global
+npm install @qtk/orm-framework -g
+```
 
-## Installation
+## 文档
 
-    # in your project
-    npm install @qtk/orm-framework --save
-    # install global
-    npm install @qtk/orm-framework -g
-
-## Usage
-
-- ### Bin
-  - #### Create Table
+### 建库建表建索引
     ``` shell
-    orm_build_mysql -d <definition path> -t <object or relation> <module name>
+    orm_build_mysql -s <schema path> -r <router path> -t <object or relation> <module name>
 
     # example
-    orm_build_mysql -d ./example/object -t object user
-    orm_build_mysql -d ./example/relation -t relation user.message
+    orm_build_mysql -s ./test/config/object/schema -r ./test/config/object/router -t object user
+    orm_build_mysql -s ./test/config/relation/schema -r ./test/config/relation/router -t relation user.message
     ```
-  - #### Drop Table
+### 删库删表删索引
     ``` shell
-    orm_destroy_mysql -d <definition path> <module name>
+    orm_destroy_mysql -r <router path> <module name>
 
     #example
-    orm_destroy_mysql -d ./example/object user
-    orm_destroy_mysql -d ./example/relation user.message
+    orm_destroy_mysql -r ./test/config/object/router user
+    orm_destroy_mysql -r ./test/config/relation/router user.message
     ```
-  - #### Truncate Table
+### 清库
     ``` shell
-    orm_purge_data -d <definition path> <module name>
+    orm_purge_data -r <router path> <module name>
 
     #example
-    orm_purge_data -d ./example/object user
-    orm_purge_data -d ./example/relation user.message
+    orm_purge_data -r ./test/config/object/router user
+    orm_purge_data -r ./test/config/object/router user.message
     ```
 
-- ### API
-  - #### Object
-    - has(id)
-    - get(id)
-    - set(object)
-    - del(id)
-    - arrayNodeAppend(id, path, ...items)
-    - arrayNodeUnshift(id, path, ...items)
-    - arrayNodeInsert(id, path, index, item)
-    - arrayNodeDel(id, path, index)
-    - arrayNodePop(id, path)
-    - arrayNodeShift(id, path)
-    - find(params)
-  - #### Relation
-    - fetch(subject, object)
-    - has(subject, object)
-    - put(relation)
-    - remove(subject, object)
-    - clear(subject)
-    - count(subject)
-    - list(subject, sort = undefined, limit = undefined)
+### API
+#### 初始化
+```js
+const ORM = require('@qtk/orm-framework');
+ORM.setup({
+    objectSchemaPath: `${__dirname}/config/object/schema`,
+    objectRouterPath: `${__dirname}/config/object/router`,
+    relationSchemaPath: `${__dirname}/config/relation/schema`,
+    relationRouterPath: `${__dirname}/config/relation/router`,
+    strict: true
+});
+const ObjectUser = new ORM.Object('user');
+const RelationUserMessage = new ORM.Relation('user.message');
+```
+- objectSchemaPath: object的schema文件夹路径
+- objectRouterPath: object的router文件夹路径
+- relationSchemaPath: relation的schema文件夹路径
+- relationRouterPath: relation的router文件夹路径
+- strict: 严格模式，默认``true``.当数据库中的值结构跟schema数据描述不相符时，为``false``时会依照schema描述重新构造拷贝数据后，再进行schema校验．而``true``时则直接进入schema校验，此情况抛数据错误．
 
+#### Object
+提供对象操作方法
+|方法名|输入|返回|作用|
+|--|--|--|--|
+|set|(object)|无|添加／更新一条数据,object里必须含有``id``字段|
+|get|(id)|object|读取某条记录|
+|has|(id)|boolean|查询某条数据是否存在|
+|del|(id)|无|删除某条数据|
+|arrayNodeAppend|(id, path, ...items)|无|给某条记录下的数组节点尾部添加一个或多个元素|
+|arrayNodeUnshift|(id, path, ...items)|无|给某条记录下的数组节点头部添加一个或多个元素|
+|arrayNodeInsert|(id, path, item)|无|给某条记录下的数组节点某个索引位置插入一个元素|
+|arrayNodeUnshift|(id, path, ...items)|无|给某条记录下的数组节点头部添加一个或多个元素|
+|arrayNodeDel|(id, path)|无|删除某条记录下的数组节点里指定位置的元素|
+|arrayNodePop|(id, path)|object|弹出某条记录下的数组节点尾部一个元素|
+|arrayNodeShift|(id, path)|object|弹出某条记录下的数组节点头部一个元素|
+|find|({where?, sort?, limit?})|array|查找所有符合规则的object,支持排序、分页|
+|count|(where)|integer|统计所有符合规则的object数量|
 
+#### Relation
+提供关系操作方法
+|方法名|输入|返回|作用|
+|--|--|--|--|
+|fetch|(subject, object)|object|返回关系中某个对象|
+|put|(relation)|无|将某个对象放入关系中，relation必须包含subject, object两个字段|
+|has|(subject, object)|boolean|判断关系中含有某个对象|
+|remove|(subject, object)|无|从关系中移除某个对象|
+|clear|(subject)|无|清空关系里所有对象|
+|list|(subject, sort？, limit？, filter？)|array|返回关系中的对象，可筛选、排序、分页|
+|count|(subject, filter？)|integer|统计关系中的对象，可筛选|
+
+#### Logic
+提供一套标准的查询、排序、分页语法，在Object``find``、``count``,Relation``list``、``count``中可以使用
+```js
+const {whereEq, whereNq, whereGt, whereGe, whereLt, whereLe, whereContain, whereIn, whereBetween, whereLike, whereAnd, whereOr, whereNot, sort, limit} = require('@qtk/orm-framework').Logic;
+
+{
+    "a": 1,
+    "arr": [1, 2, 3]
+}
+```
+|方法|作用|参数|示例(按照属性栏的顺序)|
+|--|--|--|--|
+|whereEq|等于|(field, value)|whereEq('.a', 1)|
+|whereNq|不等于|(field, value)|whereNq('.a', 1)|
+|whereGt|大于|(field, value)|whereGt('.a', 1)|
+|whereGe|大于等于|(field, value)|whereGe('.a', 1)|
+|whereLt|小于|(field, value)|whereLt('.a', 1)|
+|whereLe|小于等于|(field, value)|whereLe('.a', 1)|
+|whereContain|数组包含|(field, value)|whereContain('.arr[*]', 1)|
+|whereIn|枚举|(field, ...values)|whereIn('.a', 1, 2, 3)|
+|whereBetween|区段之间|(field, from, to)|whereBetween('.a', 1, 2)|
+|whereLike|模糊匹配|(field, value)|whereLike('.a', '%a%')|
+|whereAnd|与|(...items)|whereAnd(whereEq('.a', 1), whereLt('.b', 1))|
+|whereOr|或|(...items)|whereOr(whereEq('.a', 1), whereLt('.b', 1))|
+|whereNot|非|item|whereNot(whereEq('.a', 1))|
+|sort|排序|(field, order = "ASC")|sort('.a', 'DESC')|
+|limit|分页|(limit, skip = 0)|limit(1,1)|
+
+#### 例子
 ``` js
 const ORM = require('@qtk/orm-framework');
 ORM.setup({
-    objectPath: `${__dirname}/config/object`,
-    relationPath: `${__dirname}/config/relation`,
-    removeSchemaUndefinedProperties: false // if value has schema undefined properties,whether or not to remove them for passing the schema check when get/fetch/list
+    objectSchemaPath: `${__dirname}/config/object/schema`,
+    objectRouterPath: `${__dirname}/config/object/router`,
+    relationSchemaPath: `${__dirname}/config/relation/schema`,
+    relationRouterPath: `${__dirname}/config/relation/router`,
 });
 const ObjectUser = new ORM.Object('user');
 const ObjectMessage = new ORM.Object('message');
@@ -134,83 +193,90 @@ console.log(await ObjectUser.arrayNodePop(user.id, '.friends'));
 console.log(await ObjectUser.arrayNodeShift(user.id, '.friends'));
 
 console.log(await ObjectUser.find());
-console.log(await ObjectUser.find({where: ORM.Logic.whereOperator('.id', '=', user.id)}));
-console.log(await ObjectUser.find({where: ORM.Logic.whereOperator('.name', '=', user.name)}));
-console.log(await ObjectUser.find({where: ORM.Logic.whereNot(ORM.Logic.whereOperator('.name', '=',  user.name))}));
+console.log(await ObjectUser.find({where: ORM.Logic.whereEq('.id', user.id)}));
+console.log(await ObjectUser.find({where: ORM.Logic.whereEq('.name', user.name)}));
+console.log(await ObjectUser.find({where: ORM.Logic.whereNot(ORM.Logic.whereEq('.name', user.name))}));
 console.log(await ObjectUser.find({where: ORM.Logic.whereIn('.name', user.name, user2.name)}));
 console.log(await ObjectUser.find({where: ORM.Logic.whereAnd(
-    ORM.Logic.whereOperator('.name', '=', user.name),
-    ORM.Logic.whereOperator('.id', '=', user.id)
+    ORM.Logic.whereEq('.name', user.name),
+    ORM.Logic.whereEq('.id', user.id)
 )}));
 console.log(await ObjectUser.find({where: ORM.Logic.whereOr(
-    ORM.Logic.whereOperator('.name', '=', user.name),
-    ORM.Logic.whereOperator('.name', '=', user2.name)
+    ORM.Logic.whereEq('.name', user.name),
+    ORM.Logic.whereEq('.name', user2.name)
 )}));
 console.log(await ObjectUser.find({where: ORM.Logic.whereLike('.name', `%${user.name.substr(1, 3)}%`)}));
 console.log(await ObjectUser.find({where: ORM.Logic.whereBetween('.money', 1, 111)}));  
-
+console.log(await ObjectUser.find({where: ORM.Logic.whereContain('.friends[*].fid', '0000000000000003')})); 
 console.log(await ObjectUser.find({sort: ORM.Logic.sort('.id', "desc")}));
 console.log(await ObjectUser.find({limit: ORM.Logic.limit(1), sort: ORM.Logic.sort('.id')}));
 console.log(await ObjectUser.find({limit: ORM.Logic.limit(1, 1), sort: ORM.Logic.sort('.id', 'DESC')}));
+console.log(await ObjectUser.find({limit: ORM.Logic.limit(1, 1), sort: [ORM.Logic.sort('.id', 'DESC'), ORM.Logic.sort('.money', 'ASC')]}));
+console.log(await ObjectUser.del(user.id));
 
 await RelationUserMessage.put(userMessage);
 console.log(await RelationUserMessage.has(user.id, message.id));
 console.log(await RelationUserMessage.fetch(user.id, message.id));
 console.log(await RelationUserMessage.count(user.id));
+console.log(await RelationUserMessage.count(Users[0].id, ORM.Logic.whereEq('.status', 2)));
 console.log(await RelationUserMessage.list(user.id, '.readTime', ORM.Logic.sort('.status', 'DESC'), ORM.Logic.limit(0, 1)));
+console.log(await RelationUserMessage.list(user.id, '.readTime', [ORM.Logic.sort('.status', 'DESC'), ORM.Logic.sort('.readTime', 'DESC')], ORM.Logic.limit(0, 1)));
+console.log(await RelationUserMessage.list(user.id, '.readTime', [ORM.Logic.sort('.status', 'DESC'), ORM.Logic.sort('.readTime', 'DESC')], ORM.Logic.limit(0, 1)), ORM.Logic.whereEq('.status', 2));
 
 console.log(await RelationUserMessage.remove(user.id, message.id));
 console.log(await RelationUserMessage.clear(user.id));
-console.log(await ObjectUser.del(user.id));
-console.log(await ObjectMessage.del(message.id));
 ```
+更详细的操作，请看[测试用例](./test/basic-test.js)[github才能支持]
+## Schema定义(数据描述)
 
-## Schema Definition
+- 关键字
+  - **id** : object的主键
+  - **subject** : relation键之一
+  - **object** : relation键之一，relation的主键为 **${subject}_${object}**
+- 数据类型
+  - **string** : 字符串
+  - **boolean** : 布尔型
+  - **integer** : 整形
+  - **number** : 数字
+  - **object** : 对象
+  - **array** : 数组
+  - **empty** : 空对象，值为 **null**
 
-- Keyword
-  - **id** : special key for object
-  - **subject** : special key for relation
-  - **object** : special key for relation
-  - **string** : type for value
-  - **boolean** : type for value
-  - **integer** : type for value
-  - **number** : type for value
-  - **object** : type for value
-  - **array** : type for value
-  - **empty** : type for value
+- 方法
+    - 通用
+        - **desc(value)** : 字段描述
+        - **example(value)** : 字段值例子
+        - **default(value)** : 字段默认值, **如果字段是必须的，但数据库里的值是``undefined``, 那么object的``get``、``find``,relation的``fetch``, ``list``操作将会在返回数据时候自动给其加上默认值．注意：对于设置了默认值且数据库里值为undefined的字段，在进行排序、查找时，使用的值是数据库里的值，即``undefined``而不是默认值**
+        - **enum(value1,value2...)** : 值枚举
+    - number/integer
+        - **max(value)** : 最大值    
+        - **min(value)** : 最小值
+        - **exclusiveMin(value)** : 字段值不小于
+        - **exclusiveMax(value)** : 字段值不大于
+        - **multipleOf(value)** : 字段值是定义值的整数倍
+    - array
+        - **minItems(value)** : 元素最少个数
+        - **maxItems(value)** : 元素最多个数
+        - **length(value)** :　元素个数
+        - **contains(value)** : 数组必须包含的值
+        - **uniqueItems()** : 每个元素必须唯一，支持对象元素(比较每个对象的key && value是否相同)
+        - **item(value/array)** : 定义数组里每个元素的结构
+    - string
+        - **maxLength(value)** : 最大长度
+        - **minLength(value)** : 最小长度
+        - **length(value)** : 长度
+        - **pattern(value)** : 字符串必须匹配的正则
+    - object
+        - **properties(object)** : 定义对象的结构
+        - **patternProperties(object)** : 使用正则来定义对象的结构
+        - **additionalProperties(boolean)** : 是否允许实例拥有非[properties]里定义的节点         
+        - **require(value1, value2...)** : 实例必须拥有[properties]里定义的节点
+        - **requireAll()** : [properties]里定义的节点全是必须的
+        - **if...then...elseIf...else...endIf** : 根据实例不同的情况可以拥有不同的``properties``、``patternProperties``、``require``、``requireAll``定义
+    - string/number/integer
+        - **index()** : 给对应的Key加索引．目前支持``string``、``integer``、``number``、``array里的元素``类型，对于非数组元素里的``string``类型，必须设置``length``或者``maxLength``. 由于``Object``keyword的``id``,``Relation``keyword的``subject``与``object``默认设置了索引，故当其为``string``类型时，必须设置长度．而对于数组元素里的``string``类型则不用设置长度，因为采用的是全文索引
 
-- Method
-    - **desc(value)** : describe the field
-    - **example(value)** : give a example for the field
-    - **default(value)** : give a default value for the field, **if the field be required and target value is undefined, it will use default value to replace it when use get/fetch/list method**
-    - **enum(value1,value2...)** : target string/boolean/number/integer value must in enum
-    - **max(value)** : target integer/number maximum limit    
-    - **min(value)** : target integer/number minimum limit
-    - **max(value)** : target integer/number maximum limit
-    - **exclusiveMin(value)** : target integer/number target value must bigger than value
-    - **exclusiveMax(value)** : target integer/number target value must less than value
-    - **multipleOf(value)** : target integer/number target value must multiple of value
-    - **minItems(value)** : target array minimum items limit
-    - **maxItems(value)** : target array maximum items limit
-    - **length(value)** : target array items length limit
-    - **contains(value)** : target array must has designated item
-    - **uniqueItems(value)** : target array must be a unique array
-    - **item(value/array)** : target array item must match the rule
-    - **maxLength(value)** : target string minimum length limit
-    - **minLength(value)** : target string maximum length limit
-    - **length(value)** : target string length limit
-    - **pattern(value)** : target string must match the regex
-    - **properties(object)** : describe target object properties
-    - **patternProperties(object)** : use regex to describe target object properties
-    - **additionalProperties(boolean)** : target object can has other properties besides [properties] description          
-    - **require(value1, value2...)** : target object must has special properties
-    - **requireAll()** : target object must has all of [properties] description
-    - **length(value)** : string length limit
-    - **pattern(value)** : string must match the regex
-    - **if...then...elseIf...else...endIf** : target object can has different properties/patternProperties/require in different properties/patternProperties situation
-    - **index()** : set index for the field, only keyword **``string``, ``integer``, ``number``** can support index, and if keyword ``string``, you must set the ``length`` or ``maxLength`` for the field. **tip: the object ``id``, the relation ``subject``, ``${subject}_${object}`` is be set index by default. so object ``id``, relation ``subject``, ``object`` must set length or maxLength if type is ``string``** 
-
-- Sugar
+- 语法糖
 
 | sugar          | equivalent                                   |
 | -------------- | -------------------------------------------- |
@@ -228,20 +294,21 @@ console.log(await ObjectMessage.del(message.id));
 
 ```javascript
 module.exports = {
-    id: string().length(16), //if id is string, must set the length or maxlength
+    id: string().length(16), //如果id是字符串类型, 那么必须设置length或者maxLength
     name: string(),
     gender: integer().enum(0, 1).index(),
     money: number().min(0),
     null: empty(),
     location: {
-        lng: string().length(6).index(), //index the object field also be supported
+        lng: string().length(6).index(), //对象里某个节点做索引
         lat: string().desc('lat').default("2")
     },
     isVip: boolean(),
     friends: array().item({
-        fid: string().pattern(/^[A-Za-z0-9]{1,}$/),
+        fid: string().pattern(/^[A-Za-z0-9]{1,}$/).index(), //可以针对数组里每个元素的某个值做索引
         time: integer()
     }),
+    record: array(string().index()), //可以针对数组里每个元素做索引
     extraObject: object({
         count: integer()
     }).default({count: 10}),
@@ -255,8 +322,8 @@ module.exports = {
 
 ```javascript
 module.exports = object({
-    subject: string().length(32),
-    object: integer(),
+    subject: string().length(32), //string类型必须设置长度
+    object: integer(), //若是string类型也应设置长度
     status: integer().enum(0, 1, 2).desc('0:未读; 1:已读; 2:已删'),
     readTime: integer().default(0),
     deletedTime: integer().default(0)
@@ -270,13 +337,10 @@ module.exports = object({
     .endIf
 ```
 
-## Router Definition
-
-Router file has two type, currently and deprecated. current definition describe the new storage server, while the deprecated show the old server. when deprecated one is exist, the framework to will get from the new at first, if get nothing, then will check for the old server, and, copy to the new one. They lie in the same folder, such as
-
+## Router定义(数据库配置)
 ```
-user.deprecated.js
-user.js
+user.js　//当前使用的数据库路由文件
+user.deprecated.js　//废弃的数据库路由文件
 ```
 ```javascript
 module.exports = {
@@ -312,25 +376,55 @@ module.exports = {
 };
 ```
 
-## Custom Media
-orm is support mysql and redis default, if you want to add new media, first extend ``ORM.BaseMedia`` class , and implement function, then use ``ORM.registryMedia`` to registry into orm.
-#### must be implemented 
-- ``objectGet(id)``
-- ``objectSet(id, value)``
-- ``objectDel(id)``
-- ``objectHas(id)``
-- ``relationFetch(subject, object)``
-- ``relationPut(relation)``
-- ``relationRemove(subject, object)``
-- ``relationHas(subject, object)``
-- ``relationList(subject, sort = undefined, limit = undefined)``
-- ``relationCount(subject)``
-- ``relationClear(subject)``
-#### not need to implement if disable it
-you can disable it in construct, and if the function be called, will throw a error.
+路由的文件名跟schema定义的文件名一一对应，路由文件有两种状态：``当前``(xxx.js)及``废弃``(xxx.deprecated.js).框架主力使用``当前``路由配置，万一同级目录下存在同名废弃路由的话，使用过程中会对数据进行热迁移．
+每份路由可配置``persistence``、``cache``节点，每个节点下配置分片信息``shards``及分片规则``hash``．persistence顾名思义就持久化存储，目前框架内置支持mysql,而cache内置支持redis.
+``shards``: 数组，每个元素表示一个分片信息
+``hash``:　哈希函数，输入参数是``id``.在对某条数据进行操作时，框架将给哈希函数传入数据的id(Object是``id``字段，Relation是``subject``字段)，函数根据id映射到``shards``某个分片上
+若``persistence``、``cache``同时配置的话，那么读操作会优先操作``cache``(除了Object``find``、``count``,Relation``list``、``count``)，若有数据则立即返回，若无则会继续查询``persistence``，若有数据，在返回数据同时也同步一份到``cache``中．写操作则是等待两边操作完毕后才返回
+
+具体热迁移逻辑如下：
+|模式|方法|处理逻辑|
+|--|--|--|
+|Object|get|优先查当前，若无则查废弃，有结果则同步该数据到当前|
+|Object|set|只写当前|
+|Object|has|同Object.get|
+|Object|del|当前、废弃同时删除|
+|Object|arrayNodeAppend|首先Object.has检查，其顺带数据迁移，之后只写当前|
+|Object|arrayNodeUnshift|首先Object.has检查，其顺带数据迁移，之后只写当前|
+|Object|arrayNodeInsert|首先Object.has检查，其顺带数据迁移，之后只写当前|
+|Object|arrayNodeDel|首先Object.has检查，其顺带数据迁移，之后只写当前|
+|Object|arrayNodePop|首先Object.has检查，其顺带数据迁移，之后只写当前|
+|Object|arrayNodeShift|首先Object.has检查，其顺带数据迁移，之后只写当前|
+|Object|find|优先查当前，若无则查废弃，有结果则返回但**不做同步**|
+|Object|count|同Object.find|
+|Relation|fetch|同Object.get|
+|Relation|put|同Object.set|
+|Relation|has|同Object.has|
+|Relation|remove|同Object.del|
+|Relation|clear|同Object.del|
+|Relation|list|同Object.find|
+
+
+
+## 注意(坑)
+- schema定义文件若给字段设置默认值, 那么该字段也应是必须的，否则不会自动补上默认值
+- schema定义文件若给字段设置默认值且数据库里该字段值为undefined时，在进行排序、查找操作时，使用的值是数据库里的值，即``undefined``而不是默认值
+- Object``find``、``count``,Relation``list``,``count``考虑到可能会涉及多条数据情况，为了不影响性能，故上述方法不支持数据热迁移
+- 当Router里配置``cache``与``persistence``时，即开启数据缓存功能(加速读)，此情况存在有些数据还未加载到``cache``情况，故Object``find``、``count``、Relation``list``、``count``将会直接读取``persistence``来保证数据的准确性
+- Object``find``提供的是Object搜索功能，若Router里存在多个``shards``时，即开启数据分片功能，由于无法根据id定位到具体的分片，故会查询所有的分片信息，并合并结果返回．在此种情况下无法进行分页排序，故不支持``sort``与``limit``．
+
+## 自定义存储介质
+框架内部支持mysql与redis两种存储介质，若想换一种存储媒介或者重新设计底层数据结构的话，那么可以继承框架的``BackendMedia``基类，实现指定的函数功能后，以插件的形式注册到框架上．那么即可无痛更换，而不用修改任何代码．
+### 构造函数
+负责初始化存储媒介的链接及媒介功能支持配置．媒介可以不实现某些数据操作高级功能，此时必须在介质初始化时关闭该功能支持，否则框架将会调用该函数而导致报错．构造函数有两个参数：
+``connParam``: 经过哈希函数计算得到的分片信息
+``indexes``: 该``Object``／``Relation``的字段索引列表
 ```js
+constructor(connParam, indexes) {
+    super(connParam, indexes);
     this._support = {
-        find: false,
+        objectFind: false,
+        objectCount: false,
         objectArrayNodeAppend: false,
         objectArrayNodeUnshift: false,
         objectArrayNodeInsert: false,
@@ -338,219 +432,75 @@ you can disable it in construct, and if the function be called, will throw a err
         objectArrayNodePop: false,
         objectArrayNodeShift: false
     }
+}
 ```
-- ``objectArrayNodeAppend(id, path, items)``
-- ``objectArrayNodeUnshift(id, path, items)``
-- ``objectArrayNodeInsert(id, path, index, item)``
-- ``objectArrayNodeDel(id, path, index)``
-- ``objectArrayNodePop(id, path)``
-- ``objectArrayNodeShift(id, path)``
-- ``find(where = undefined, sort = undefined, limit = undefined)``
-
-### Redis Media Demo
-#### Plugin Code
-constructor has two params, 
-- ``connParam`` is one of schema router definition ``shards`` depends on schema router definition ``hash`` by id.
-- ``indexes`` is a array , field paths which be set index. for example:
+indexes值例子：
 ```js
 [
     '.id', 
     '.gender', 
-    '.location.lng', 
-    '.extraNumber'
+    '.location.lng', //对象里某个字段索引
+    '.extraNumber',
+    '.arr[*]', //数组索引
+    '.friends[*].fid'　//数组索引
 ]
 ```
-set media name, which match schema router definition shards ``media``
+### 插件名
+实现静态``media``,返回值与路由文件里``shards``里配置的``media``字符值相同
 ```js
 static get media() { //set media name
     return 'redis';
 }
 ```
-all the code
-```js
-const Pool = require('./pool');
-module.exports = class extends ORM.BackendMedia {
-    constructor(connParam, indexes) {
-        super(connParam, indexes);
-        this._support = {
-            find: false,
-            objectArrayNodeAppend: true,
-            objectArrayNodeUnshift: true,
-            objectArrayNodeInsert: true,
-            objectArrayNodeDel: true,
-            objectArrayNodePop: true,
-            objectArrayNodeShift: true
-        }
-        this._mutex = require('process-key-mutex');
-    }
 
-    static get media() { //set media name
-        return 'redis';
-    }
+### 方法
+|方法|入参|有结果返回|无结果返回|必须实现|作用|
+|--|--|--|--|--|--|
+|objectGet|(id)|object|undefined|是|获取对象记录|
+|objectSet|(id, value)|无|无|是|添加／更新对象记录|
+|objectHas|(id)|true|false|是|查询对象记录是否存在|
+|objectDel|(id)|无|无|是|删除对象记录|
+|objectArrayNodeAppend|(id, path, items)|无|无|否|给某条记录下的数组节点尾部添加一个或多个元素|
+|objectArrayNodeUnshift|(id, path, items)|无|无|否|给某条记录下的数组节点尾部添加一个或多个元素|
+|objectArrayNodeInsert|(id, path, index, item)|无|无|否|给某条记录下的数组节点某个索引位置插入一个元素|
+|objectArrayNodeUnshift|(id, path, items)|object|undefined|否|给某条记录下的数组节点头部添加一个或多个元素|
+|objectArrayNodeDel|(id, path, index)|无|无|否|删除某条记录下的数组节点里指定位置的元素|
+|objectArrayNodePop|(id, path)|object|undefined|否|弹出某条记录下的数组节点尾部一个元素|
+|objectArrayNodeShift|(id, path)|object|undefined|否|弹出某条记录下的数组节点头部一个元素|
+|objectArrayNodeShift|(id, path)|object|undefined|否|弹出某条记录下的数组节点头部一个元素|
+|objectFind|({where, sort, limit})|array|[]|否|查找所有符合规则的对象,支持排序、分页|
+|objectCount|(where)|integer|0|否|统计所有符合规则的对象数量|
+|relationFetch|(subject, object)|object|undefined|是|返回关系中某个对象|
+|relationPut|(relation)|无|无|是|将某个对象放入关系中|
+|relationRemove|(subject, object)|无|无|是|从关系中移除某个对象|
+|relationHas|(subject, object)|true|false|是|判断关系中含有某个对象|
+|relationList|(subject, sort？, limit？, filter？)|array|[]|是|返回关系中的对象，可筛选、排序、分页|
+|relationCount|(subject, filter？)|integer|0|是|统计关系中的对象，可筛选|
+|relationClear|(subject)|无|无|是|清空关系里所有对象|
 
-    async objectGet(id) {
-        let result = await this._execute('get', `${this._connParam.bucket}.${id}`);
-        return result == null ? undefined : JSON.parse(result);
-    }
-
-    async objectSet(id, value) {
-        await this._execute('set', `${this._connParam.bucket}.${id}`, JSON.stringify(value));
-    }
-
-    async objectDel(id) {
-        await this._execute('del', `${this._connParam.bucket}.${id}`);
-    }
-
-    async objectHas(id) {
-        return Boolean(await this._execute('exists', `${this._connParam.bucket}.${id}`));
-    }
-
-    async objectArrayNodeAppend(id, path, items) {
-        await this._mutex(`${this._connParam.bucket}.${id}`, async() => {
-            let value = await this.objectGet(id);
-            this._getNode(value, path).push(...items);
-            await this.objectSet(id, value);
-        });
-    }
-
-    async objectArrayNodeUnshift(id, path, items) {
-        await this._mutex(`${this._connParam.bucket}.${id}`, async() => {
-            let value = await this.objectGet(id);
-            let array = this._getNode(value, path)
-            items.forEach(item => array.unshift(item));
-            await this.objectSet(id, value);
-        });
-    }
-
-    async objectArrayNodeInsert(id, path, index, item) {
-        await this._mutex(`${this._connParam.bucket}.${id}`, async() => {
-            let value = await this.objectGet(id);
-            this._getNode(value, path).splice(index, 0, item);
-            await this.objectSet(id, value);
-        });
-    }
-
-    async objectArrayNodeDel(id, path, index) {
-        await this._mutex(`${this._connParam.bucket}.${id}`, async() => {
-            let value = await this.objectGet(id);
-            this._getNode(value, path).splice(index, 1);
-            await this.objectSet(id, value);
-        });
-    }
-
-    async objectArrayNodePop(id, path) {
-        return await this._mutex(`${this._connParam.bucket}.${id}`, async() => {
-            let value = await this.objectGet(id);
-            let item = this._getNode(value, path).pop();
-            await this.objectSet(id, value);
-            return item;
-        });
-    }
-
-    async objectArrayNodeShift(id, path) {
-        return await this._mutex(`${this._connParam.bucket}.${id}`, async() => {
-            let value = await this.objectGet(id);
-            let item = this._getNode(value, path).shift();
-            await this.objectSet(id, value);
-            return item;
-        });
-    }
-
-    async relationFetch(subject, object) {
-        let result = await this._execute('hget', `${this._connParam.bucket}.${subject}`, object);
-        return result == null ? undefined : JSON.parse(result);
-    }
-
-    async relationPut(relation) {
-        await this._execute('hset', `${this._connParam.bucket}.${relation.subject}`, relation.object, JSON.stringify(relation));
-    }
-
-    async relationHas(subject, object) {
-        return Boolean(await this._execute('hexists', `${this._connParam.bucket}.${subject}`, object));
-    }
-
-    async relationRemove(subject, object) {
-        await this._execute('hdel', `${this._connParam.bucket}.${subject}`, object);
-    }
-
-    async relationList(subject, sort = undefined, limit = undefined) {
-        let list = (await this._execute('hvals', `${this._connParam.bucket}.${subject}`)).map(_ => JSON.parse(_));
-        if (sort != undefined) {
-            let {field, order} = sort;
-            list.sort((l, r) => order == "ASC" ? this._getNode(l, field) - this._getNode(r, field) : this._getNode(r, field) - this._getNode(l, field));
-        }
-        if (limit != undefined) {
-            list = list.slice(limit.skip, limit.skip + limit.limit);
-        }
-        return list;
-    }
-
-    async relationCount(subject) {
-        return await this._execute('hlen', `${this._connParam.bucket}.${subject}`);
-    }
-
-    async relationClear(subject) {
-        await this._execute('del', `${this._connParam.bucket}.${subject}`);
-    }
-
-    async _execute(method, ...params) {
-        let redis = Pool.fetch(this._connParam);
-        return new Promise((resolve, reject) => {
-            redis[method](...params, (error, result) => {
-                if (error != undefined) return reject(error);
-                return resolve(result);
-            })
-        })
-    }
-
-    _getNode(object, path) {
-        return path.split('.').slice(1).reduce((prev, curr) => {
-            if (curr == '') return prev;
-            if (/\[(\d+)\]/.test(curr)) {
-                return object[parseInt(curr.match(/\[(\d+)\]/)[1])];
-            }
-            else {
-                return object[curr];
-            }
-        }, object);
-    }
-};
-```
-
-#### Orm Definition Router Code
-```js
-module.exports = {
-    cache: {
-        shards: [
-            {
-                media: "redis",
-                host: "127.0.0.1",
-                port: 6379,
-                bucket: "db_orm.o_message",
-            }
-        ],
-        hash: function (id) {
-            return this.shards[0];
-        }
-    }
-};
-```
-#### Used
-```js
-const ORM = require('@qtk/orm-framework');
-ORM.setup({
-	objectPath: `${__dirname}/config/object`,
-    relationPath: `${__dirname}/config/relation`,
-    removeSchemaUndefinedProperties: false
-});
-ORM.registryMedia(require('./index.js')); //custom media plugin file path
-const ObjectUser = new ORM.Object('user');
-await ObjectMessage.set(message);
-```
-
-## Acknowledge
-schema definition grammar is base in part on the source code of the [semantic-schema](https://www.npmjs.com/package/semantic-schema) project
+### 解析Logic
+逻辑分``where``,``sort``,``limit``三类，``objectFind``,``objectCount``,``relationList``, ``relationCount``函数传入的是标准逻辑对象,需要开发者自行转化成对应媒介数据的操作逻辑．所有标准逻辑对象都在``ORM.Logic.Type``定义
+|标准对象|属性|示例(按照属性栏的顺序)|
+|--|--|--|
+|WhereAnd|items|标准逻辑对象数组|
+|WhereOr|items|标准逻辑对象数组|
+|WhereNot|item|标准逻辑对象|
+|WhereIn|field, items|'.a', [1, 2, 3]|
+|WhereBetween|field, from, to|'.a', 1, 2|
+|WhereLike|field, value|'.a', '%a%'|
+|WhereEq|field, value|'.a', 1|
+|WhereNq|field, value|'.a', 1|
+|WhereGt|field, value|'.a', 1|
+|WhereGe|field, value|'.a', 1|
+|WhereLt|field, value|'.a', 1|
+|WhereLe|field, value|'.a', 1|
+|WhereContain|field, value|'.arr[*]', 1|
+|Sort|field, order|'.a', 'DESC'|
+|Limit|skip, limit|1,1|
 
 
-objectFind,objectCount,relationList,relationCount暂不支持热迁移及，会影响性能
-自动填充数据在数据查询之后，故禁止对自动填充字段做object的find(除limit),count,arrayNodeAppend，arrayNodeUnshift,arrayNodeInsert,arrayNodeDel,arrayNodePop,arrayNodeShift;relation的list(除limit),count
+### Redis媒介插件代码
+请移步[这里](./doc/DEMO_PLUGIN.md)[github才能支持]
+
+## 致谢
+schema语法引用的是[semantic-schema](https://www.npmjs.com/package/semantic-schema)项目代码，感谢Magnus同学的支持

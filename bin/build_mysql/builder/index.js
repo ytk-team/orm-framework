@@ -63,31 +63,51 @@ module.exports = class {
 
     async _createColumn(shard, ) {
         let indexes = Index.analysis(this._schema, this._type == "relation" ? ".subject" : []);
-        for (let {path, type, length} of indexes) {
-            let mysqlDefinition = "";
-            switch(type) {
-                case "string":
-                    mysqlDefinition = `VARCHAR(${length})`;
-                    break;
-                case "integer":
-                    mysqlDefinition = `BIGINT`;
-                    break;
-                case "number":
-                    mysqlDefinition = `FLOAT`;
-                    break;
-                default:
-                    throw new Error(`can not support index type ${type}`);
-            }
+        for (let {path, type, indexType, length} of indexes) {
             if (await this._query(shard, `SELECT * FROM information_schema.columns WHERE table_schema = '${shard.database}' AND table_name = '${shard.table}' AND column_name = '${path}'`) != undefined) continue;
-            await this._query(shard, `ALTER TABLE \`${shard.database}\`.\`${shard.table}\` ADD \`${path}\` ${mysqlDefinition} generated always as (doc->>'$${path}')`);
+            let sql = undefined;
+            if (indexType == "NORMAL") {
+                let mysqlDefinition = "";
+                switch(type) {
+                    case "string":
+                        mysqlDefinition = `VARCHAR(${length})`;
+                        break;
+                    case "integer":
+                        mysqlDefinition = `BIGINT`;
+                        break;
+                    case "number":
+                        mysqlDefinition = `FLOAT`;
+                        break;
+                    default:
+                        throw new Error(`can not support index type ${type}`);
+                }
+                sql = `ALTER TABLE \`${shard.database}\`.\`${shard.table}\` ADD \`${path}\` ${mysqlDefinition} generated always as (doc->>'$${path}')`;
+            }
+            else if (indexType == "FULL_TEXT") {
+                sql = `ALTER TABLE \`${shard.database}\`.\`${shard.table}\` ADD \`${path}\` TEXT GENERATED ALWAYS as (doc->>"$${path}") STORED`;
+            }
+            else {
+                throw new Error(`no support indexType ${indexType}`);
+            }
+            await this._query(shard, sql);
         }
     }
 
     async _createIndex(shard) {
         let indexes = Index.analysis(this._schema, this._type == "relation" ? ".subject" : []);
-        for (let {path} of indexes) {
+        for (let {path, indexType} of indexes) {
             if (await this._query(shard, `SELECT * FROM information_schema.statistics WHERE table_schema = '${shard.database}' AND table_name = '${shard.table}' AND index_name = '${path}'`) != undefined) continue;
-            await this._query(shard, `create index \`${path}\` on ${shard.database}.${shard.table} (\`${path}\`)`);
+            let sql = undefined;
+            if (indexType == "NORMAL") {
+                sql = `CREATE INDEX \`${path}\` ON ${shard.database}.${shard.table} (\`${path}\`)`;
+            }
+            else if (indexType == "FULL_TEXT") {
+                sql = `CREATE FULLTEXT INDEX \`${path}\` ON ${shard.database}.${shard.table} (\`${path}\`)`;
+            }
+            else {
+                throw new Error(`no support indexType ${indexType}`);
+            }
+            await this._query(shard, sql);
         }
     }
 

@@ -50,46 +50,33 @@ module.exports = class Wrapper {
     }
 
     async objectArrayNodeAppend(id, path, items) {
+        assert(await this.objectHas(id) == true, 'can not find record');
         await this._routerCurrent.objectArrayNodeAppend(id, path, items);
     }
 
     async objectArrayNodeUnshift(id, path, items) {
+        assert(await this.objectHas(id) == true, 'can not find record');
         await this._routerCurrent.objectArrayNodeUnshift(id, path, items);
     }
 
     async objectArrayNodeInsert(id, path, index, item) {
+        assert(await this.objectHas(id) == true, 'can not find record');
         await this._routerCurrent.objectArrayNodeInsert(id, path, index, item);
     }
 
     async objectArrayNodeDel(id, path, index) {
-        let pendings = [this._routerCurrent.objectArrayNodeDel(id, path, index)];
-        if (this._routerDeprecated !== undefined) {
-            pendings.push(this._routerDeprecated.objectArrayNodeDel(id, path, index));
-        }
-        
-        await Promise.all(pendings);
+        assert(await this.objectHas(id) == true, 'can not find record');
+        await this._routerCurrent.objectArrayNodeDel(id, path, index);
     }
 
     async objectArrayNodePop(id, path) {
-        let value = await this._routerCurrent.objectArrayNodePop(id, path);
-        if ((value === undefined) && (this._routerDeprecated !== undefined)) {
-            value = await this._routerDeprecated.objectArrayNodePop(id, path);
-            if (value !== undefined) {
-                await this._routerCurrent.set(id, await this._routerDeprecated.get(id));
-            }
-        }
-        return value;
+        assert(await this.objectHas(id) == true, 'can not find record');
+        return await this._routerCurrent.objectArrayNodePop(id, path);
     }
 
     async objectArrayNodeShift(id, path) {
-        let value = await this._routerCurrent.objectArrayNodeShift(id, path);
-        if ((value === undefined) && (this._routerDeprecated !== undefined)) {
-            value = await this._routerDeprecated.objectArrayNodeShift(id, path);
-            if (value !== undefined) {
-                await this._routerCurrent.set(id, await this._routerDeprecated.get(id));
-            }
-        }
-        return value;
+        assert(await this.objectHas(id) == true, 'can not find record');
+        return await this._routerCurrent.objectArrayNodeShift(id, path);
     }
 
     async objectFind({where, sort, limit}) {
@@ -227,7 +214,6 @@ class Router {
         const {cache, persistence} = this._resolveMedia(id);
         let pendings = [];
         if (cache !== undefined && cache.support.objectArrayNodeAppend) {
-            assert(await this.objectHas(id) == true, 'can not find record');
             pendings.push(cache.objectArrayNodeAppend(id, path, items));
         }
         if (persistence !== undefined && persistence.support.objectArrayNodeAppend) {
@@ -241,7 +227,6 @@ class Router {
         const {cache, persistence} = this._resolveMedia(id);
         let pendings = [];
         if (cache !== undefined && cache.support.objectArrayNodeUnshift) {
-            assert(await this.objectHas(id) == true, 'can not find record');
             pendings.push(cache.objectArrayNodeUnshift(id, path, items));
         }
         if (persistence !== undefined && persistence.support.objectArrayNodeUnshift) {
@@ -255,7 +240,6 @@ class Router {
         const {cache, persistence} = this._resolveMedia(id);
         let pendings = [];
         if (cache !== undefined && cache.support.objectArrayNodeInsert) {
-            assert(await this.objectHas(id) == true, 'can not find record');
             pendings.push(cache.objectArrayNodeInsert(id, path, index, item));
         }
         if (persistence !== undefined && persistence.support.objectArrayNodeInsert) {
@@ -269,7 +253,6 @@ class Router {
         const {cache, persistence} = this._resolveMedia(id);
         let pendings = [];
         if (cache !== undefined && cache.support.objectArrayNodeDel) {
-            assert(await this.objectHas(id) == true, 'can not find record');
             pendings.push(cache.objectArrayNodeDel(id, path, index));
         }
         if (persistence !== undefined && persistence.support.objectArrayNodeDel) {
@@ -284,7 +267,6 @@ class Router {
         let pendings = [];
         let value = undefined;
         if (cache !== undefined && cache.support.objectArrayNodePop) {
-            assert(await this.objectHas(id) == true, 'can not find record');
             pendings.push(cache.objectArrayNodePop(id, path));
         }
 
@@ -301,7 +283,6 @@ class Router {
         let pendings = [];
         let value = undefined;
         if (cache !== undefined && cache.support.objectArrayNodeShift) {
-            assert(await this.objectHas(id) == true, 'can not find record');
             pendings.push(cache.objectArrayNodeShift(id, path));
         }
 

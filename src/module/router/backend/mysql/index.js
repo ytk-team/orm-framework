@@ -34,8 +34,24 @@ module.exports = class extends require('../base.js') {
         return row;
     }
 
+    //原来使用REPLACE INTO,若是全新数据插入情况，Promise.all有可能造成死锁
     async objectSet(id, value) {
-        const sql = Mysql.format('REPLACE INTO ?? SET ?? = ?', [this._connParam.table, 'doc', JSON.stringify(Object.assign({_id: id}, value))]);
+        // const sql = Mysql.format('REPLACE INTO ?? SET ?? = ?', [this._connParam.table, 'doc', JSON.stringify(Object.assign({_id: id}, value))]);
+        // await this._execute(sql);
+        let sql = Mysql.format('SELECT count(_id) as count FROM ?? WHERE ?? = ?', [this._connParam.table, '_id', id]);
+        let [{count}] = await this._execute(sql);
+        if (count == 0) {
+            sql = Mysql.format('INSERT INTO ?? SET ?? = ?', [this._connParam.table, 'doc', JSON.stringify(Object.assign({_id: id}, value))]);
+        }
+        else {
+            sql = Mysql.format('UPDATE ?? SET ?? = ? WHERE ?? = ?', [
+                this._connParam.table, 
+                'doc', 
+                JSON.stringify(Object.assign({_id: id}, value)),
+                '_id',
+                id
+            ]);
+        }
         await this._execute(sql);
     }
 
@@ -300,6 +316,14 @@ module.exports = class extends require('../base.js') {
             totalBinds[placeholder] = where.value;
             return {
                 query: `${columnName} < :${placeholder}`,
+                binds: totalBinds
+            }
+        }else if (where instanceof Type.WhereContain) {
+            let columnName = this._getColumnName(where.field);
+            let placeholder = `_${uuid().replace(/\-/g, "")}`;
+            totalBinds[placeholder] = where.value;
+            return {
+                query: `MATCH ${columnName} AGAINST (:${placeholder})`,
                 binds: totalBinds
             }
         }

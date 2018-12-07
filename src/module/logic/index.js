@@ -11,6 +11,7 @@ const Type = {
     WhereGe: require('./where/ge'),
     WhereLt: require('./where/lt'),
     WhereLe: require('./where/le'),
+    WhereContain: require('./where/contain'),
     Sort: require('./sort'),
     Limit: require('./limit'),
 }
@@ -28,6 +29,7 @@ module.exports = {
     whereGt: (field, value) => new Type.WhereGt(field, value),
     whereLe: (field, value) => new Type.WhereLe(field, value),
     whereLt: (field, value) => new Type.WhereLt(field, value),
+    whereContain: (field, value) => new Type.WhereContain(field, value),
     whereBetween: (field, from, to) => new Type.WhereBetween(field, from, to),
     sort: (field, order = "ASC") => new Type.Sort(field, order),
     limit: (limit, skip = 0) => new Type.Limit(limit, skip)

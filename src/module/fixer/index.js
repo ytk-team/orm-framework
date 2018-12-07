@@ -15,7 +15,7 @@ module.exports = class Fixer {
         return new Fixer(schema);
     }
 
-    fix(instance, removeSchemaUndefinedProperties) {
+    fix(instance, strict) {
         instance = JSON.parse(JSON.stringify(instance));
         let fixResult = undefined;
         switch (this._schema.type) {
@@ -38,7 +38,7 @@ module.exports = class Fixer {
                 fixResult = NullFixer(this._schema, instance);
                 break;
             case 'object':
-                fixResult = ObjectFixer(this._schema, instance, removeSchemaUndefinedProperties);
+                fixResult = ObjectFixer(this._schema, instance, strict);
                 break;
             default:
                 throw new Error(`no support type ${this._schema.type}`);

@@ -6,13 +6,13 @@ const StringFixer = require('../string');
 const ArrayFixer = require('../array');
 const ObjectValidator = require('../../validator/object');
 
-const ObjectFixer = (schema, value, removeSchemaUndefinedProperties) => {
+const ObjectFixer = (schema, value, strict) => {
     if (value == undefined) {
         return schema.default;
     }
     else {
         let {properties, required} = getFinallySchema(schema, value);
-        if (removeSchemaUndefinedProperties) {
+        if (!strict) {
             value = Object.keys(value).reduce((prev, key) => {
                 if (properties[key] == undefined) return prev;
                 prev[key] = value[key];
@@ -23,11 +23,11 @@ const ObjectFixer = (schema, value, removeSchemaUndefinedProperties) => {
             prev[curr] = properties[curr];
             return prev;
         }, {});
-        return propertiesFix(requiredProperties, value, removeSchemaUndefinedProperties);
+        return propertiesFix(requiredProperties, value, strict);
     }
 }
 
-function propertiesFix(requiredProperties, value, removeSchemaUndefinedProperties) {
+function propertiesFix(requiredProperties, value, strict) {
     let keys = Object.keys(value);
     for (let standardKey in requiredProperties) {
         if (!keys.includes(standardKey) || requiredProperties[standardKey].type == "object") {
@@ -53,7 +53,7 @@ function propertiesFix(requiredProperties, value, removeSchemaUndefinedPropertie
                     break;
                 case 'object':
                     fixResult = ObjectFixer(requiredProperties[standardKey], value[standardKey],
- removeSchemaUndefinedProperties);
+ strict);
                     break;
                 default:
                     throw new Error(`no support type ${requiredProperties[standardKey].type}`);

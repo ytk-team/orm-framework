@@ -6,9 +6,16 @@ const Builder = require('./builder');
 opts.parse(
     [
         { 
-            short       : 'd',
-            long        : 'dir',
-            description : '定义文件目录',
+            short       : 's',
+            long        : 'schema',
+            description : 'schema目录',
+            value       : true,
+            required    : true, 
+        },
+        { 
+            short       : 'r',
+            long        : 'router',
+            description : 'router目录',
             value       : true,
             required    : true, 
         },
@@ -24,8 +31,8 @@ opts.parse(
         { name : 'module', required: true },
     ], true);
 
-const routerDir = path.resolve(`${opts.get('dir')}/router`);
-const schemaDir = path.resolve(`${opts.get('dir')}/schema`);
+const routerDir = path.resolve(opts.get('router'));
+const schemaDir = path.resolve(opts.get('schema'));
 const type = opts.get('type');
 const builder = new Builder(type, schemaDir, routerDir, opts.args()[0]);
 

@@ -6,7 +6,7 @@ module.exports = class ArraySchema extends BaseSchema {
         this._current.set('type', 'array');
         this._current.set('additionalItems', false);
     }
-
+    
     maxItems(num) {
         this._current.set('maxItems', num);
         return this;

@@ -7,7 +7,7 @@ function buildObject {
         for object in `ls ${objectSourceDir}/schema`; do
             object=$(echo "$object" | sed -r "s/\.js$//g")
             echo "    [object] ${object}"
-            node ${CWD}/../../bin/build_mysql -d ${objectSourceDir} -t object ${object}
+            node ${CWD}/../../bin/build_mysql -r ${objectSourceDir}/router -s ${objectSourceDir}/schema -t object ${object}
         done
     fi
 }
@@ -23,7 +23,7 @@ function buildRelation {
                 relation=${subject}'.'${object}
                 relation=$(echo "$relation" | sed -r "s/\.js$//g")
                 echo "    [relation] ${relation}"
-                node ${CWD}/../../bin/build_mysql -d ${relationSourceDir} -t relation ${relation}
+                node ${CWD}/../../bin/build_mysql -r ${relationSourceDir}/router -s ${relationSourceDir}/schema -t relation ${relation}
             done
         done
     fi

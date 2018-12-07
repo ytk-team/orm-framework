@@ -6,7 +6,7 @@ ORM.setup({
     objectRouterPath: `${__dirname}/config/object/router`,
     relationSchemaPath: `${__dirname}/config/relation/schema`,
     relationRouterPath: `${__dirname}/config/relation/router`,
-    removeSchemaUndefinedProperties: false
+    strict: true
 });
 const ObjectUser = new ORM.Object('user');
 const ObjectMessage = new ORM.Object('message');
@@ -28,6 +28,7 @@ describe('#basic', function () {
     });
 
     it('[object-set]', async function() {
+        this.timeout(10000);
         await ObjectUser.set(Users[0]);
         assert(await ObjectUser.has(Users[0].id), `object set failed`);
     });
@@ -147,6 +148,9 @@ describe('#basic', function () {
 
         result = await ObjectUser.count(ORM.Logic.whereBetween('.money', 1, 111));
         assert(result == 1, `object count between failed`);
+
+        result = await ObjectUser.count(ORM.Logic.whereContain('.friends[*].fid', '0000000000000002'));
+        assert(result == 1, `object count where [.friends[*].fid] failed`);
     });
 
     it('[object-find-where]', async function() {
@@ -185,6 +189,9 @@ describe('#basic', function () {
 
         result = await ObjectUser.find({where: ORM.Logic.whereBetween('.money', 1, 111)});
         assert(result.length == 1 && result[0].id == Users[0].id, `object find where [.find(id where between)] failed`);
+
+        result = await ObjectUser.find({where: ORM.Logic.whereContain('.friends[*].fid', '0000000000000002')});
+        assert(result.length == 1 && result[0].id == Users[2].id, `object find where [.friends[*].fid] failed`);
     });
 
     it('[object-find-sort]', async function() {
@@ -284,6 +291,9 @@ describe('#basic', function () {
 
         filter = ORM.Logic.whereLike('.text', 'abcd');
         assert(await RelationUserMessage.count(Users[0].id, filter) === 1, 'relation count filter like abcd failed');
+
+        filter = ORM.Logic.whereContain('.arr[*]', 'abc');
+        assert(await RelationUserMessage.count(Users[0].id, filter) === 1, 'relation count filter contain abcd failed');
     });
 
     it('[relation-list]', async function() {
@@ -370,6 +380,10 @@ describe('#basic', function () {
         filter = ORM.Logic.whereLike('.text', 'abcd');
         result = await RelationUserMessage.list(Users[0].id, undefined, undefined, filter);
         assert(result[0].text === 'abcd', 'relation list filter like abcd failed');
+
+        filter = ORM.Logic.whereContain('.arr[*]', 'abc');
+        result = await RelationUserMessage.list(Users[0].id, undefined, undefined, filter);
+        assert(result[0].subject === UserMessages[0].subject, 'relation count filter contain abcd failed');
     })
 
     it('[relation-clear', async function() {

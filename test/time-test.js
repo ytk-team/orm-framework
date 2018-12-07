@@ -7,7 +7,7 @@ ORM.setup({
     objectRouterPath: `${__dirname}/config/object/router`,
     relationSchemaPath: `${__dirname}/config/relation/schema`,
     relationRouterPath: `${__dirname}/config/relation/router`,
-    removeSchemaUndefinedProperties: false
+    strict: true
 });
 const ObjectUser = new ORM.Object('user');
 const ObjectMessage = new ORM.Object('message');
@@ -216,6 +216,12 @@ describe('#time', function () {
             result = await ObjectUser.count(ORM.Logic.whereBetween('.money', 1, 111));
         }
         console.log(`object-count-where(between): ${(process.uptime() - time) * 1000 / times} ms`);
+
+        var time = process.uptime();
+        for (let i = 0; i < times; i++) {
+            result = await ObjectUser.count(ORM.Logic.whereContain('.friends[*].fid', '0000000000000002'));
+        }
+        console.log(`object-count-where(contain): ${(process.uptime() - time) * 1000 / times} ms`);
     });
 
     it('[object-find-where]', async function() {
@@ -285,6 +291,12 @@ describe('#time', function () {
             result = await ObjectUser.find({where: ORM.Logic.whereBetween('.money', 1, 111)});
         }
         console.log(`object-find-where-find(between): ${(process.uptime() - time) * 1000 / times} ms`);
+
+        var time = process.uptime();
+        for (let i = 0; i < times; i++) {
+            result = await ObjectUser.find({where: ORM.Logic.whereContain('.friends[*].fid', '0000000000000002')});
+        }
+        console.log(`object-find-where(contain): ${(process.uptime() - time) * 1000 / times} ms`);
     });
 
     it('[object-find-sort]', async function() {

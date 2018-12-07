@@ -3,7 +3,7 @@ module.exports = {
         object: '',
         relation: ''
     },
-    removeSchemaUndefinedProperties: false,
+    strict: true,
     indexes: {},
     medias : {
         [require('../module/router/backend/mysql').media]: require('../module/router/backend/mysql'),

@@ -4,6 +4,7 @@ module.exports = class {
     _getNodeSchema(path) {
         return path.split('.').slice(1).reduce((prev, curr) => {
             if (curr == '') return prev;
+            if (curr.substr(-3) == '[*]') curr = curr.substr(0, curr.length - 3);
             if (prev.type == "object") {
                 return (prev.properties || prev.patternProperties)[curr];
             }
@@ -32,7 +33,8 @@ module.exports = class {
             where instanceof Type.WhereGe ||
             where instanceof Type.WhereGt ||
             where instanceof Type.WhereLe ||
-            where instanceof Type.WhereLt
+            where instanceof Type.WhereLt ||
+            where instanceof Type.WhereContain
         ) {
             return [where.field];
         }

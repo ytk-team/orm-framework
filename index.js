@@ -13,7 +13,7 @@ module.exports = {
     Type: require('./src/module/type'),
     Logic: require('./src/module/logic'),
     BackendMedia: require('./src/module/router/backend/base.js'),
-    setup: ({objectSchemaPath, objectRouterPath, relationSchemaPath, relationRouterPath, removeSchemaUndefinedProperties = false}) => {
+    setup: ({objectSchemaPath, objectRouterPath, relationSchemaPath, relationRouterPath, strict = false}) => {
         require('./src/global').definitionDir.objectPath = {
             schema: objectSchemaPath,
             router: objectRouterPath
@@ -22,7 +22,7 @@ module.exports = {
             schema: relationSchemaPath,
             router: relationRouterPath
         };
-        require('./src/global').removeSchemaUndefinedProperties = removeSchemaUndefinedProperties;
+        require('./src/global').strict = strict;
     },
     registryMedia: (...medias) => medias.forEach(_ => require('./src/global').medias[_.media] = _)
 };

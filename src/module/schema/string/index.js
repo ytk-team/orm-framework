@@ -4,11 +4,13 @@ module.exports = class extends Base {
     constructor() {
         super();
         this._current.set('type', 'string');
-        this._current.set('getIndexInfo', () => {
+        this._current.set('getIndexInfo', (needCheckLength) => {
             let maxLength = this._current.get('maxLength');
-            assert(maxLength != undefined, `key to index must set maxLength`);
-            assert(maxLength <= Math.floor(767 / 4), `key length is no longer than ${Math.floor(767 / 4)}`); //InnoDB存储引擎的表索引的前缀长度最长是767字节,编码采用utf8mb4
-            return {type: 'string', length: maxLength};
+            if (needCheckLength == true) {
+                assert(maxLength != undefined, `key to index must set maxLength`);
+                assert(maxLength <= Math.floor(767 / 4), `key length is no longer than ${Math.floor(767 / 4)}`); //InnoDB存储引擎的表索引的前缀长度最长是767字节,编码采用utf8mb4
+            }
+            return {type: 'string', length: maxLength || -1};
         });
     }
     

@@ -12,7 +12,7 @@ module.exports = {
     },
     isVip: boolean(),
     friends: array().item({
-        fid: string().pattern(/^[A-Za-z0-9]{1,}$/),
+        fid: string().pattern(/^[A-Za-z0-9]{1,}$/).index(),
         time: integer()
     }),
     extraObject: object({

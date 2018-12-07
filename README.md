@@ -15,29 +15,29 @@ npm install @qtk/orm-framework -g
 ## 文档
 
 ### 建库建表建索引
-    ``` shell
-    orm_build_mysql -s <schema path> -r <router path> -t <object or relation> <module name>
+``` shell
+orm_build_mysql -s <schema path> -r <router path> -t <object or relation> <module name>
 
-    # example
-    orm_build_mysql -s ./test/config/object/schema -r ./test/config/object/router -t object user
-    orm_build_mysql -s ./test/config/relation/schema -r ./test/config/relation/router -t relation user.message
-    ```
+# example
+orm_build_mysql -s ./test/config/object/schema -r ./test/config/object/router -t object user
+orm_build_mysql -s ./test/config/relation/schema -r ./test/config/relation/router -t relation user.message
+```
 ### 删库删表删索引
-    ``` shell
-    orm_destroy_mysql -r <router path> <module name>
+``` shell
+orm_destroy_mysql -r <router path> <module name>
 
-    #example
-    orm_destroy_mysql -r ./test/config/object/router user
-    orm_destroy_mysql -r ./test/config/relation/router user.message
-    ```
+#example
+orm_destroy_mysql -r ./test/config/object/router user
+orm_destroy_mysql -r ./test/config/relation/router user.message
+```
 ### 清库
-    ``` shell
-    orm_purge_data -r <router path> <module name>
+``` shell
+orm_purge_data -r <router path> <module name>
 
-    #example
-    orm_purge_data -r ./test/config/object/router user
-    orm_purge_data -r ./test/config/object/router user.message
-    ```
+#example
+orm_purge_data -r ./test/config/object/router user
+orm_purge_data -r ./test/config/object/router user.message
+```
 
 ### API
 #### 初始化

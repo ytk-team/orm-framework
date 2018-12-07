@@ -61,6 +61,7 @@ const RelationUserMessage = new ORM.Relation('user.message');
 
 #### Object
 提供对象操作方法
+
 |方法名|输入|返回|作用|
 |--|--|--|--|
 |set|(object)|无|添加／更新一条数据,object里必须含有``id``字段|
@@ -79,6 +80,7 @@ const RelationUserMessage = new ORM.Relation('user.message');
 
 #### Relation
 提供关系操作方法
+
 |方法名|输入|返回|作用|
 |--|--|--|--|
 |fetch|(subject, object)|object|返回关系中某个对象|
@@ -99,6 +101,7 @@ const {whereEq, whereNq, whereGt, whereGe, whereLt, whereLe, whereContain, where
     "arr": [1, 2, 3]
 }
 ```
+
 |方法|作用|参数|示例(按照属性栏的顺序)|
 |--|--|--|--|
 |whereEq|等于|(field, value)|whereEq('.a', 1)|
@@ -383,6 +386,7 @@ module.exports = {
 若``persistence``、``cache``同时配置的话，那么读操作会优先操作``cache``(除了Object``find``、``count``,Relation``list``、``count``)，若有数据则立即返回，若无则会继续查询``persistence``，若有数据，在返回数据同时也同步一份到``cache``中．写操作则是等待两边操作完毕后才返回
 
 具体热迁移逻辑如下：
+
 |模式|方法|处理逻辑|
 |--|--|--|
 |Object|get|优先查当前，若无则查废弃，有结果则同步该数据到当前|
@@ -480,6 +484,7 @@ static get media() { //set media name
 
 ### 解析Logic
 逻辑分``where``,``sort``,``limit``三类，``objectFind``,``objectCount``,``relationList``, ``relationCount``函数传入的是标准逻辑对象,需要开发者自行转化成对应媒介数据的操作逻辑．所有标准逻辑对象都在``ORM.Logic.Type``定义
+
 |标准对象|属性|示例(按照属性栏的顺序)|
 |--|--|--|
 |WhereAnd|items|标准逻辑对象数组|

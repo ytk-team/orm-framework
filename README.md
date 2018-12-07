@@ -232,7 +232,7 @@ console.log(await RelationUserMessage.clear(user.id));
 - 关键字
   - **id** : object的主键
   - **subject** : relation键之一
-  - **object** : relation键之一，relation的主键为 **${subject}_${object}**
+  - **object** : relation键之一，relation的主键为 **\${subject}_\${object}**
 - 数据类型
   - **string** : 字符串
   - **boolean** : 布尔型
@@ -274,7 +274,7 @@ console.log(await RelationUserMessage.clear(user.id));
         - **requireAll()** : [properties]里定义的节点全是必须的
         - **if...then...elseIf...else...endIf** : 根据实例不同的情况可以拥有不同的``properties``、``patternProperties``、``require``、``requireAll``定义
     - string/number/integer
-        - **index()** : 给对应的Key加索引．目前支持``string``、``integer``、``number``、``array里的元素``类型，对于非数组元素里的``string``类型，必须设置``length``或者``maxLength``. 由于``Object``keyword的``id``,``Relation``keyword的``subject``与``object``默认设置了索引，故当其为``string``类型时，必须设置长度．而对于数组元素里的``string``类型则不用设置长度，因为采用的是全文索引
+        - **index()** : 给对应的Key加索引．目前支持``string``、``integer``、``number``、``array里的元素``类型，对于非数组元素里的``string``类型，必须设置``length``或者``maxLength``. **由于``Object``keyword的``id``,``Relation``keyword的``subject``与``object``默认设置了索引，故当其为``string``类型时，必须设置长度**．而对于数组元素里的``string``类型则不用设置长度，因为采用的是全文索引
 
 - 语法糖
 

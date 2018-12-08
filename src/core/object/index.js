@@ -28,7 +28,7 @@ module.exports = class extends require('../base.js') {
     }
 
     async set(obj) {
-        obj = ValueFixer.from(this._schema).fix(obj);
+        obj = ValueFixer.from(this._schema).fix(obj, true);
         let validator = SchemaValidator.from(this._schema);
         let isPass = validator.validate(obj);
         if (isPass == false) throw new Error(validator.errorText);

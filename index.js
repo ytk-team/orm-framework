@@ -13,7 +13,7 @@ module.exports = {
     Type: require('./src/module/type'),
     Logic: require('./src/module/logic'),
     BackendMedia: require('./src/module/router/backend/base.js'),
-    setup: ({objectSchemaPath, objectRouterPath, relationSchemaPath, relationRouterPath, strict = false}) => {
+    setup: ({objectSchemaPath, objectRouterPath, relationSchemaPath, relationRouterPath, strict = true}) => {
         require('./src/global').definitionDir.objectPath = {
             schema: objectSchemaPath,
             router: objectRouterPath

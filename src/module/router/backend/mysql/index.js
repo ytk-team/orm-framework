@@ -167,7 +167,7 @@ module.exports = class extends require('../base.js') {
         }
         if (limit != undefined) {
             let subSql = Mysql.format(`SELECT _id FROM ?? ${whereSql} ${sortSql} ${this._parseLimitToMysql(limit)}`, [this._connParam.table]);
-            sql = Mysql.format(`SELECT * FROM ?? JOIN (${subSql}) AS sub using(_id)`, [this._connParam.table]);
+            sql = Mysql.format(`SELECT * FROM ?? JOIN (${subSql}) AS sub using(_id) ${sortSql}`, [this._connParam.table]);
         }
         else {
             sql = Mysql.format(`SELECT doc FROM ?? ${whereSql} ${sortSql}`, [this._connParam.table]);

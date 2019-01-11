@@ -222,9 +222,9 @@ console.log(await RelationUserMessage.has(user.id, message.id));
 console.log(await RelationUserMessage.fetch(user.id, message.id));
 console.log(await RelationUserMessage.count(user.id));
 console.log(await RelationUserMessage.count(Users[0].id, ORM.Logic.whereEq('.status', 2)));
-console.log(await RelationUserMessage.list(user.id, '.readTime', ORM.Logic.sort('.status', 'DESC'), ORM.Logic.limit(0, 1)));
-console.log(await RelationUserMessage.list(user.id, '.readTime', [ORM.Logic.sort('.status', 'DESC'), ORM.Logic.sort('.readTime', 'DESC')], ORM.Logic.limit(0, 1)));
-console.log(await RelationUserMessage.list(user.id, '.readTime', [ORM.Logic.sort('.status', 'DESC'), ORM.Logic.sort('.readTime', 'DESC')], ORM.Logic.limit(0, 1)), ORM.Logic.whereEq('.status', 2));
+console.log(await RelationUserMessage.list(user.id, ORM.Logic.sort('.status', 'DESC'), ORM.Logic.limit(0, 1)));
+console.log(await RelationUserMessage.list(user.id, [ORM.Logic.sort('.status', 'DESC'), ORM.Logic.sort('.readTime', 'DESC')], ORM.Logic.limit(0, 1)));
+console.log(await RelationUserMessage.list(user.id, [ORM.Logic.sort('.status', 'DESC'), ORM.Logic.sort('.readTime', 'DESC')], ORM.Logic.limit(0, 1)), ORM.Logic.whereEq('.status', 2));
 
 console.log(await RelationUserMessage.remove(user.id, message.id));
 console.log(await RelationUserMessage.clear(user.id));

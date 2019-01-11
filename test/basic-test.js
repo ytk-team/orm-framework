@@ -34,8 +34,9 @@ describe('#basic', function () {
     });
 
     it('[object-has]', async function() {
-        await ObjectUser.set(Users[0]);
-        assert(await ObjectUser.has(Users[0].id) === true, 'user id should exists');
+        await ObjectUser.set(Users[2]);
+        assert(await ObjectUser.has(Users[2].id) === true, 'user id should exists');
+        assert((await ObjectUser.has(Users[2].id) === true) && (await ObjectUser.has(Users[2].id.toUpperCase()) === false), 'user id should exists');
         assert(await ObjectMessage.has(100) === false, 'message id should not exists');
     });
 

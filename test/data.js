@@ -62,7 +62,7 @@ module.exports = {
         extraArray: ["1","2","3"],
         extraInteger: 0
     }, {
-        id: '0000000000000003',
+        id: '000000000000000e',
         name: 'Ken',
         gender: 1,
         money: 130,
@@ -80,5 +80,6 @@ module.exports = {
             time: 1516538015
         }],
         extraBoolean: true
-    }]
+    }
+    ]
 }

@@ -243,7 +243,7 @@ module.exports = class extends require('../base.js') {
             return {
                 query: `BINARY ${columnName} in (${where.items.map(item => {
                     let placeholder = `_${uuid().replace(/\-/g, "")}`;
-                    totalBinds[placeholder] = item;
+                    totalBinds[placeholder] = typeof item === "boolean" ? item.toString() : item;
                     return `:${placeholder}`;
                 }).join(', ')})`,
                 binds: totalBinds
@@ -272,7 +272,7 @@ module.exports = class extends require('../base.js') {
         else if (where instanceof Type.WhereEq) {
             let columnName = this._getColumnName(where.field);
             let placeholder = `_${uuid().replace(/\-/g, "")}`;
-            totalBinds[placeholder] = where.value;
+            totalBinds[placeholder] = typeof where.value === "boolean" ? where.value.toString() : where.value;
             return {
                 query: `BINARY ${columnName} = :${placeholder}`,
                 binds: totalBinds
@@ -281,7 +281,7 @@ module.exports = class extends require('../base.js') {
         else if (where instanceof Type.WhereNq) {
             let columnName = this._getColumnName(where.field);
             let placeholder = `_${uuid().replace(/\-/g, "")}`;
-            totalBinds[placeholder] = where.value;
+            totalBinds[placeholder] = typeof where.value === "boolean" ? where.value.toString() : where.value;
             return {
                 query: `BINARY ${columnName} != :${placeholder}`,
                 binds: totalBinds

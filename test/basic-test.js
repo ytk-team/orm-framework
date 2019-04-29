@@ -193,6 +193,15 @@ describe('#basic', function () {
 
         result = await ObjectUser.find({where: ORM.Logic.whereContain('.friends[*].fid', '0000000000000002')});
         assert(result.length == 1 && result[0].id == Users[2].id, `object find where [.friends[*].fid] failed`);
+
+        result = await ObjectUser.find({where: ORM.Logic.whereEq('.isVip', true)});
+        assert(result.length == 2, `object find where boolean [.find(isVip where operator =)] failed`);
+
+        result = await ObjectUser.find({where: ORM.Logic.whereNq('.isVip', true)});
+        assert(result.length == 1, `object find where boolean nq [.find(isVip where operator =)] failed`);
+
+        result = await ObjectUser.find({where: ORM.Logic.whereIn('.isVip', true)});
+        assert(result.length == 2, `object find where boolean in [.find(isVip where operator =)] failed`);
     });
 
     it('[object-find-sort]', async function() {

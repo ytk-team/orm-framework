@@ -37,7 +37,7 @@ module.exports = class {
             sql = `CREATE TABLE IF NOT EXISTS ${shard.database}.${shard.table}
                 (
                     doc json NULL,
-                    \`_id\` ${primaryKeyType} as (json_unquote(json_extract(\`doc\`,'$._id'))) stored primary key
+                    \`_id\` ${primaryKeyType} BINARY as (json_unquote(json_extract(\`doc\`,'$._id'))) stored primary key
                 )
                 ENGINE=InnoDB CHARSET=utf8mb4
                 ;`
@@ -53,7 +53,7 @@ module.exports = class {
             sql = `CREATE TABLE IF NOT EXISTS ${shard.database}.${shard.table}
                 (
                     doc json NULL,
-                    \`_id\` ${primaryKeyType} as (json_unquote(json_extract(\`doc\`,'$._id'))) stored primary key
+                    \`_id\` ${primaryKeyType} BINARY as (json_unquote(json_extract(\`doc\`,'$._id'))) stored primary key
                 )
                 ENGINE=InnoDB CHARSET=utf8mb4
                 ;`

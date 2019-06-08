@@ -14,5 +14,14 @@ module.exports = class WhereOr extends Base {
     get items() {
         return this._items;
     }
+
+    toJson() {
+        return {
+            type: this.__proto__.constructor.name,
+            fields: {
+                _items: this._items.map(_ => _.toJson())
+            }
+        }
+    }
 }
 

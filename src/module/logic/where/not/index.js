@@ -11,4 +11,13 @@ module.exports = class WhereNot extends Base {
     get item() {
         return this._item;
     }
+
+    toJson() {
+        return {
+            type: this.__proto__.constructor.name,
+            fields: {
+                _item: this._item.toJson()
+            }
+        }
+    }
 }

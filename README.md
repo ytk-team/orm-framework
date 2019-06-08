@@ -95,11 +95,6 @@ const RelationUserMessage = new ORM.Relation('user.message');
 提供一套标准的查询、排序、分页语法，在Object``find``、``count``,Relation``list``、``count``中可以使用
 ```js
 const {whereEq, whereNq, whereGt, whereGe, whereLt, whereLe, whereContain, whereIn, whereBetween, whereLike, whereAnd, whereOr, whereNot, sort, limit} = require('@qtk/orm-framework').Logic;
-
-{
-    "a": 1,
-    "arr": [1, 2, 3]
-}
 ```
 
 |方法|作用|参数|示例(按照属性栏的顺序)|
@@ -119,6 +114,17 @@ const {whereEq, whereNq, whereGt, whereGe, whereLt, whereLe, whereContain, where
 |whereNot|非|item|whereNot(whereEq('.a', 1))|
 |sort|排序|(field, order = "ASC")|sort('.a', 'DESC')|
 |limit|分页|(limit, skip = 0)|limit(1,1)|
+
+##### JSON化
+Logic对象是一个类对象，不支持通过网络传输。故Logic对象提供``toJson``方法，允许将Logic对象转换为JSON对象．**同时在原本使用Logic对象的地方支持使用JSON化后对象进行操作**
+```js
+let result = await ObjectUser.find({where: ORM.Logic.whereEq('.id', Users[0].id)});
+assert(result.length == 1 && result[0].id == Users[0].id, `object find where [.find(id where operator =)] failed`);
+
+//等同于下面
+result = await ObjectUser.find({where: ORM.Logic.whereEq('.id', Users[0].id).toJson()});
+assert(result.length == 1 && result[0].id == Users[0].id, `[toJson]object find where [.find(id where operator =)] failed`);
+```
 
 #### 例子
 ``` js
@@ -222,9 +228,9 @@ console.log(await RelationUserMessage.has(user.id, message.id));
 console.log(await RelationUserMessage.fetch(user.id, message.id));
 console.log(await RelationUserMessage.count(user.id));
 console.log(await RelationUserMessage.count(Users[0].id, ORM.Logic.whereEq('.status', 2)));
-console.log(await RelationUserMessage.list(user.id, ORM.Logic.sort('.status', 'DESC'), ORM.Logic.limit(0, 1)));
-console.log(await RelationUserMessage.list(user.id, [ORM.Logic.sort('.status', 'DESC'), ORM.Logic.sort('.readTime', 'DESC')], ORM.Logic.limit(0, 1)));
-console.log(await RelationUserMessage.list(user.id, [ORM.Logic.sort('.status', 'DESC'), ORM.Logic.sort('.readTime', 'DESC')], ORM.Logic.limit(0, 1)), ORM.Logic.whereEq('.status', 2));
+console.log(await RelationUserMessage.list(user.id, ORM.Logic.sort('.status', 'DESC'), ORM.Logic.limit(1, 1)));
+console.log(await RelationUserMessage.list(user.id, [ORM.Logic.sort('.status', 'DESC'), ORM.Logic.sort('.readTime', 'DESC')], ORM.Logic.limit(1, 1)));
+console.log(await RelationUserMessage.list(user.id, [ORM.Logic.sort('.status', 'DESC'), ORM.Logic.sort('.readTime', 'DESC')], ORM.Logic.limit(1, 1)), ORM.Logic.whereEq('.status', 2));
 
 console.log(await RelationUserMessage.remove(user.id, message.id));
 console.log(await RelationUserMessage.clear(user.id));
@@ -501,11 +507,13 @@ static get media() { //set media name
 |WhereLe|field, value|'.a', 1|
 |WhereContain|field, value|'.arr[*]', 1|
 |Sort|field, order|'.a', 'DESC'|
-|Limit|skip, limit|1,1|
+|Limit|limit, skip|1,1|
 
 
 ### Redis媒介插件代码
 请移步[这里](./doc/DEMO_PLUGIN.md)[github才能支持]
 
+## 更新日志
+- 2019-06-08: Logic对象支持转换为json对象。同时在原使用Logic对象的地方支持直接传入json对象进行查询
 ## 致谢
 schema语法引用的是[semantic-schema](https://www.npmjs.com/package/semantic-schema)项目代码，感谢Magnus同学的支持

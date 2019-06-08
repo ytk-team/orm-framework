@@ -3,7 +3,8 @@ const SchemaValidator = require('../../module/validator');
 const ValueFixer = require('../../module/fixer');
 const Router = require('../../module/router');
 const Sugar = require('../../module/sugar');
-
+const Logic = require('../../module/logic');
+const LogicBase = require('../../module/logic/base');
 module.exports = class extends require('../base.js') {
     constructor(name) {
         super();
@@ -46,10 +47,24 @@ module.exports = class extends require('../base.js') {
     }
 
     async count(subject, filter = undefined) {
+        //支持json格式的logic表达式查询
+        if (filter !== undefined && !(filter instanceof LogicBase)) filter = Logic.toLogic(filter);
         return await this._router.relationCount(subject, filter);
     }
 
     async list(subject, sort = undefined, limit = undefined, filter = undefined) {
+        //支持json格式的logic表达式查询
+        if (filter !== undefined && !(filter instanceof LogicBase)) filter = Logic.toLogic(filter);
+        if (sort !== undefined) {
+            if (Array.isArray(sort) && sort.every(_ => !(_ instanceof LogicBase))) {
+                sort = sort.map(_ => Logic.toLogic(_));
+            }
+            else if (!Array.isArray(sort) && !(sort instanceof LogicBase)) {
+                sort = Logic.toLogic(sort);
+            }
+        }
+        if (limit !== undefined && !(limit instanceof LogicBase)) limit = Logic.toLogic(limit);
+
         const {strict} = require('../../global');
         let relations = await this._router.relationList(subject, sort, limit, filter);
         return relations.map(item => {

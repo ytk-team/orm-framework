@@ -3,6 +3,8 @@ const SchemaValidator = require('../../module/validator');
 const ValueFixer = require('../../module/fixer');
 const Router = require('../../module/router');
 const Sugar = require('../../module/sugar');
+const Logic = require('../../module/logic');
+const LogicBase = require('../../module/logic/base');
 
 module.exports = class extends require('../base.js') {
     constructor(name) {
@@ -107,6 +109,19 @@ module.exports = class extends require('../base.js') {
 
     async find(params) {
         let {where = undefined, sort = undefined, limit = undefined} = params || {};
+
+        //支持json格式的logic表达式查询
+        if (where !== undefined && !(where instanceof LogicBase)) where = Logic.toLogic(where);
+        if (sort !== undefined) {
+            if (Array.isArray(sort) && sort.every(_ => !(_ instanceof LogicBase))) {
+                sort = sort.map(_ => Logic.toLogic(_));
+            }
+            else if (!Array.isArray(sort) && !(sort instanceof LogicBase)) {
+                sort = Logic.toLogic(sort);
+            }
+        }
+        if (limit !== undefined && !(limit instanceof LogicBase)) limit = Logic.toLogic(limit);
+
         const {strict} = require('../../global');
         let rows = await this._router.objectFind({where, sort, limit});
         if (rows.length === 0) return rows;
@@ -120,6 +135,8 @@ module.exports = class extends require('../base.js') {
     }
 
     async count(where = undefined) {
+        //支持json格式的logic表达式查询
+        if (where !== undefined && !(where instanceof LogicBase)) where = Logic.toLogic(where);
         return await this._router.objectCount(where);
     }
 }

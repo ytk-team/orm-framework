@@ -81,10 +81,10 @@ module.exports = class {
                     default:
                         throw new Error(`can not support index type ${type}`);
                 }
-                sql = `ALTER TABLE \`${shard.database}\`.\`${shard.table}\` ADD \`${path}\` ${mysqlDefinition} generated always as (doc->>'$${path}')`;
+                sql = `ALTER TABLE \`${shard.database}\`.\`${shard.table}\` ADD \`${path}\` ${mysqlDefinition} ${type === "string" ? "BINARY" : ""} generated always as (doc->>'$${path}')`;
             }
             else if (indexType == "FULL_TEXT") {
-                sql = `ALTER TABLE \`${shard.database}\`.\`${shard.table}\` ADD \`${path}\` TEXT GENERATED ALWAYS as (doc->>"$${path}") STORED`;
+                sql = `ALTER TABLE \`${shard.database}\`.\`${shard.table}\` ADD \`${path}\` TEXT BINARY GENERATED ALWAYS as (doc->>"$${path}") STORED`;
             }
             else {
                 throw new Error(`no support indexType ${indexType}`);

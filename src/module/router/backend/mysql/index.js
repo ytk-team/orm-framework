@@ -26,7 +26,7 @@ module.exports = class extends require('../base.js') {
     }
 
     async objectGet(id) {
-        let sql = Mysql.format('SELECT doc FROM ?? WHERE BINARY ?? = ?', [this._connParam.table, '_id', id]);
+        let sql = Mysql.format('SELECT doc FROM ?? WHERE ?? = ?', [this._connParam.table, '_id', id]);
         let [row] = await this._execute(sql);
         if (row == undefined) return undefined;
         row = JSON.parse(row.doc);
@@ -38,13 +38,13 @@ module.exports = class extends require('../base.js') {
     async objectSet(id, value) {
         // const sql = Mysql.format('REPLACE INTO ?? SET ?? = ?', [this._connParam.table, 'doc', JSON.stringify(Object.assign({_id: id}, value))]);
         // await this._execute(sql);
-        let sql = Mysql.format('SELECT count(_id) as count FROM ?? WHERE BINARY ?? = ?', [this._connParam.table, '_id', id]);
+        let sql = Mysql.format('SELECT count(_id) as count FROM ?? WHERE ?? = ?', [this._connParam.table, '_id', id]);
         let [{count}] = await this._execute(sql);
         if (count == 0) {
             sql = Mysql.format('INSERT INTO ?? SET ?? = ?', [this._connParam.table, 'doc', JSON.stringify(Object.assign({_id: id}, value))]);
         }
         else {
-            sql = Mysql.format('UPDATE ?? SET ?? = ? WHERE BINARY ?? = ?', [
+            sql = Mysql.format('UPDATE ?? SET ?? = ? WHERE ?? = ?', [
                 this._connParam.table, 
                 'doc', 
                 JSON.stringify(Object.assign({_id: id}, value)),
@@ -56,12 +56,12 @@ module.exports = class extends require('../base.js') {
     }
 
     async objectDel(id) {
-        const sql = Mysql.format('DELETE FROM ?? WHERE BINARY ?? = ?', [this._connParam.table, '_id', id]);
+        const sql = Mysql.format('DELETE FROM ?? WHERE ?? = ?', [this._connParam.table, '_id', id]);
         await this._execute(sql);
     }
 
     async objectHas(id) {
-        let sql = Mysql.format('SELECT count(_id) as count FROM ?? WHERE BINARY ?? = ?', [this._connParam.table, '_id', id]);
+        let sql = Mysql.format('SELECT count(_id) as count FROM ?? WHERE ?? = ?', [this._connParam.table, '_id', id]);
         let [{count}] = await this._execute(sql);
         return count !== 0;
     }
@@ -107,34 +107,34 @@ module.exports = class extends require('../base.js') {
 
     async objectArrayNodeAppend(id, path, items) {
         let insertItems = items.map(_ => `'$${path}', CAST(${Mysql.format('?', JSON.stringify(_))} AS JSON)`);
-        const sql = Mysql.format(`UPDATE ?? SET doc=JSON_ARRAY_APPEND(doc, ${insertItems.join(', ')}) WHERE BINARY ?? = ?`, [this._connParam.table, '_id', id]);
+        const sql = Mysql.format(`UPDATE ?? SET doc=JSON_ARRAY_APPEND(doc, ${insertItems.join(', ')}) WHERE ?? = ?`, [this._connParam.table, '_id', id]);
         await this._execute(sql);
     }
 
     async objectArrayNodeUnshift(id, path, items) {
         let insertItems = items.map((item, index, arr) => `'$${path}[${index}]', CAST(${Mysql.format('?', JSON.stringify(arr[arr.length - index - 1]))} AS JSON)`);
-        const sql = Mysql.format(`UPDATE ?? SET doc=JSON_ARRAY_INSERT(doc, ${insertItems.join(', ')}) WHERE BINARY ?? = ?`, [this._connParam.table, '_id', id]);
+        const sql = Mysql.format(`UPDATE ?? SET doc=JSON_ARRAY_INSERT(doc, ${insertItems.join(', ')}) WHERE ?? = ?`, [this._connParam.table, '_id', id]);
         await this._execute(sql);
     }
 
     async objectArrayNodeInsert(id, path, index, item) {
-        const sql = Mysql.format(`UPDATE ?? SET doc=JSON_ARRAY_INSERT(doc, '$${path}[${index}]', CAST(? AS JSON)) WHERE BINARY ?? = ?`, [this._connParam.table, JSON.stringify(item), '_id', id]);
+        const sql = Mysql.format(`UPDATE ?? SET doc=JSON_ARRAY_INSERT(doc, '$${path}[${index}]', CAST(? AS JSON)) WHERE ?? = ?`, [this._connParam.table, JSON.stringify(item), '_id', id]);
         await this._execute(sql);
     }
 
     async objectArrayNodeDel(id, path, index) {
-        const sql = Mysql.format('UPDATE ?? SET doc=JSON_REMOVE(doc, ?) WHERE BINARY ?? = ?', [this._connParam.table, `$${path}[${index}]`, '_id', id]);
+        const sql = Mysql.format('UPDATE ?? SET doc=JSON_REMOVE(doc, ?) WHERE ?? = ?', [this._connParam.table, `$${path}[${index}]`, '_id', id]);
         await this._execute(sql);
     }
 
     async objectArrayNodePop(id, path) {
         return this._mutex.lock(`${this._connParam.host}:${this._connParam.port}_${this._connParam.database}:${this._connParam.table}_${id}_${path}`, async() => {
-            let sql = Mysql.format('SELECT doc->>? as arr FROM ?? where BINARY ?? = ?', [`$${path}`, this._connParam.table, '_id', id]);
+            let sql = Mysql.format('SELECT doc->>? as arr FROM ?? where ?? = ?', [`$${path}`, this._connParam.table, '_id', id]);
             let [row] = await this._execute(sql);
             assert(row != undefined, 'can not find record');
             let arr = JSON.parse(row.arr);
             if (arr.length == 0) return undefined;
-            sql = Mysql.format('UPDATE ?? SET doc=JSON_REMOVE(doc, ?) WHERE BINARY ?? = ?', [this._connParam.table, `$${path}[${arr.length - 1}]`, '_id', id]);
+            sql = Mysql.format('UPDATE ?? SET doc=JSON_REMOVE(doc, ?) WHERE ?? = ?', [this._connParam.table, `$${path}[${arr.length - 1}]`, '_id', id]);
             await this._execute(sql);
             return arr.pop();
         })
@@ -142,12 +142,12 @@ module.exports = class extends require('../base.js') {
 
     async objectArrayNodeShift(id, path) {
         return this._mutex.lock(`${this._connParam.host}:${this._connParam.port}_${this._connParam.database}:${this._connParam.table}_${id}_${path}`, async() => {
-            let sql = Mysql.format('SELECT doc->>? as first FROM ?? where BINARY ?? = ?', [`$${path}[0]`, this._connParam.table, '_id', id]);
+            let sql = Mysql.format('SELECT doc->>? as first FROM ?? where ?? = ?', [`$${path}[0]`, this._connParam.table, '_id', id]);
             let [row] = await this._execute(sql);
             assert(row != undefined, 'can not find record');
             let item = JSON.parse(row.first);
             if (item == null) return undefined;
-            sql = Mysql.format('UPDATE ?? SET doc=JSON_REMOVE(doc, ?) WHERE BINARY ?? = ?', [this._connParam.table, `$${path}[0]`, '_id', id]);
+            sql = Mysql.format('UPDATE ?? SET doc=JSON_REMOVE(doc, ?) WHERE ?? = ?', [this._connParam.table, `$${path}[0]`, '_id', id]);
             await this._execute(sql);
             return item;
         })
@@ -241,7 +241,7 @@ module.exports = class extends require('../base.js') {
         else if (where instanceof Type.WhereIn) {
             let columnName = this._getColumnName(where.field);
             return {
-                query: `BINARY ${columnName} in (${where.items.map(item => {
+                query: `${columnName} in (${where.items.map(item => {
                     let placeholder = `_${uuid().replace(/\-/g, "")}`;
                     totalBinds[placeholder] = typeof item === "boolean" ? item.toString() : item;
                     return `:${placeholder}`;
@@ -256,7 +256,7 @@ module.exports = class extends require('../base.js') {
             let toPlaceholder = `_${uuid().replace(/\-/g, "")}`;
             totalBinds[toPlaceholder] = where.to;
             return {
-                query: `BINARY ${columnName} BETWEEN :${fromPlaceholder} AND :${toPlaceholder}`,
+                query: `${columnName} BETWEEN :${fromPlaceholder} AND :${toPlaceholder}`,
                 binds: totalBinds
             }
         }
@@ -265,7 +265,7 @@ module.exports = class extends require('../base.js') {
             let placeholder = `_${uuid().replace(/\-/g, "")}`;
             totalBinds[placeholder] = where.value;
             return {
-                query: `BINARY ${columnName} LIKE :${placeholder}`,
+                query: `${columnName} LIKE :${placeholder}`,
                 binds: totalBinds
             }
         }
@@ -274,7 +274,7 @@ module.exports = class extends require('../base.js') {
             let placeholder = `_${uuid().replace(/\-/g, "")}`;
             totalBinds[placeholder] = typeof where.value === "boolean" ? where.value.toString() : where.value;
             return {
-                query: `BINARY ${columnName} = :${placeholder}`,
+                query: `${columnName} = :${placeholder}`,
                 binds: totalBinds
             }
         }
@@ -283,7 +283,7 @@ module.exports = class extends require('../base.js') {
             let placeholder = `_${uuid().replace(/\-/g, "")}`;
             totalBinds[placeholder] = typeof where.value === "boolean" ? where.value.toString() : where.value;
             return {
-                query: `BINARY ${columnName} != :${placeholder}`,
+                query: `${columnName} != :${placeholder}`,
                 binds: totalBinds
             }
         }else if (where instanceof Type.WhereGe) {
@@ -291,7 +291,7 @@ module.exports = class extends require('../base.js') {
             let placeholder = `_${uuid().replace(/\-/g, "")}`;
             totalBinds[placeholder] = where.value;
             return {
-                query: `BINARY ${columnName} >= :${placeholder}`,
+                query: `${columnName} >= :${placeholder}`,
                 binds: totalBinds
             }
         }else if (where instanceof Type.WhereGt) {
@@ -299,7 +299,7 @@ module.exports = class extends require('../base.js') {
             let placeholder = `_${uuid().replace(/\-/g, "")}`;
             totalBinds[placeholder] = where.value;
             return {
-                query: `BINARY ${columnName} > :${placeholder}`,
+                query: `${columnName} > :${placeholder}`,
                 binds: totalBinds
             }
         }else if (where instanceof Type.WhereLe) {
@@ -307,7 +307,7 @@ module.exports = class extends require('../base.js') {
             let placeholder = `_${uuid().replace(/\-/g, "")}`;
             totalBinds[placeholder] = where.value;
             return {
-                query: `BINARY ${columnName} <= :${placeholder}`,
+                query: `${columnName} <= :${placeholder}`,
                 binds: totalBinds
             }
         }else if (where instanceof Type.WhereLt) {
@@ -315,7 +315,7 @@ module.exports = class extends require('../base.js') {
             let placeholder = `_${uuid().replace(/\-/g, "")}`;
             totalBinds[placeholder] = where.value;
             return {
-                query: `BINARY ${columnName} < :${placeholder}`,
+                query: `${columnName} < :${placeholder}`,
                 binds: totalBinds
             }
         }else if (where instanceof Type.WhereContain) {

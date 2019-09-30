@@ -1,5 +1,7 @@
 declare namespace ORM {
-
+    /**
+     * 对象
+     */
     class Object {
         /**
          * 对象
@@ -90,6 +92,9 @@ declare namespace ORM {
         count(where?: LogicWhereClass.Base): Promise<number>
     }
     
+    /**
+     * 关系
+     */
     class Relation {
         /**
          * 关系
@@ -152,6 +157,9 @@ declare namespace ORM {
         ): Promise<any[]>
     }
 
+    /**
+     * 存储媒介基类
+     */
     class BackendMedia {
         /**
          * 
@@ -256,13 +264,13 @@ declare namespace ORM {
          * @param {LogicSortClass.Base | LogicSortClass.Base[]} sort 排序参数
          * @param {LogicLimitClass.Base} limit 分页参数
          */
-        objectFind(where: LogicWhereClass.Base = undefined, sort: (LogicSortClass.Base | LogicSortClass.Base[]) = undefined , limit: LogicLimitClass.Base = undefined): Promise<any[]>
+        objectFind(where: LogicWhereClass.Base, sort: (LogicSortClass.Base | LogicSortClass.Base[]) , limit: LogicLimitClass.Base): Promise<any[]>
     
         /**
          * 统计对象数量，支持条件查询
          * @param　{LogicWhereClass.Base} where 查询参数
          */
-        objectCount(where: LogicWhereClass.Base = undefined): Promise<number>
+        objectCount(where: LogicWhereClass.Base): Promise<number>
     
         /**
          * 获取主key与关联key间的关系信息
@@ -300,9 +308,9 @@ declare namespace ORM {
          */
         relationList(
             subject: string | number, 
-            sort: LogicSortClass.Base = undefined, 
-            limit: LogicLimitClass.Base = undefined, 
-            filter: LogicWhereClass.Base = undefined
+            sort: LogicSortClass.Base, 
+            limit: LogicLimitClass.Base, 
+            filter: LogicWhereClass.Base
         ): Promise<any[]>
          
         /**
@@ -310,7 +318,7 @@ declare namespace ORM {
          * @param {string | number} subject 主keyId
          * @param {LogicWhereClass.Base} filter 筛选参数
          */
-        relationCount(subject: string | number, filter: LogicWhereClass.Base = undefined): Promise<number>
+        relationCount(subject: string | number, filter: LogicWhereClass.Base): Promise<number>
     
         /**
          * 清空所有与主key相关的关系信息

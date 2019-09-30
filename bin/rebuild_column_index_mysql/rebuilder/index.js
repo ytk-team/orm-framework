@@ -14,57 +14,34 @@ module.exports = class {
     async exec() {
         for (let shard of this._shards) {
             if (shard.media !== 'mysql') continue;
-            await this._createDatabase(shard);
-            await this._createTable(shard);
+            
+            await this._dropColumnAndIndex(shard);
             await this._createColumn(shard);
             await this._createIndex(shard);
         }
     }
 
-    async _createDatabase(shard) {
-        await this._query(shard, `CREATE DATABASE IF NOT EXISTS ${shard.database}`);
+    async _dropColumnAndIndex(shard) {
+        let dropSqls = await this._query(
+            shard, 
+            `SELECT *
+            FROM INFORMATION_SCHEMA.STATISTICS i 
+            WHERE TABLE_SCHEMA = '${shard.database}' AND TABLE_NAME = '${shard.table}' AND i.INDEX_NAME <> 'PRIMARY';`
+        );
+        for (let {TABLE_SCHEMA, TABLE_NAME, COLUMN_NAME, INDEX_NAME} of dropSqls) {
+            await this._query(shard, `ALTER TABLE ${TABLE_SCHEMA}.${TABLE_NAME} DROP INDEX \`${COLUMN_NAME}\`;`);
+            await this._query(shard, `ALTER TABLE ${TABLE_SCHEMA}.${TABLE_NAME} DROP COLUMN \`${INDEX_NAME}\`;`);
+        }
     }
 
-    async _createTable(shard) {
-        let sql = "";
-        if (this._type === "object") {
-            let indexes = Index.analysis(this._schema, ['.id']);
-            let idInfo = indexes.find(({path}) => path === '.id');
-            assert(idInfo != undefined, `module ${this._moduleName} primaryKey type can not translate to mysql key definition`);
-            let primaryKeyLength = idInfo.length;
-            let primaryKeyType = `VARCHAR(${primaryKeyLength})`;
-            assert(primaryKeyLength <= Math.floor(767 / 4), `key length is no longer than ${Math.floor(767 / 4)}`); 
-            sql = `CREATE TABLE IF NOT EXISTS ${shard.database}.${shard.table}
-                (
-                    doc json NULL,
-                    \`_id\` ${primaryKeyType} BINARY as (json_unquote(json_extract(\`doc\`,'$._id'))) stored primary key
-                )
-                ENGINE=InnoDB CHARSET=utf8mb4
-                ;`
-        }
-        else {
-            let indexes = Index.analysis(this._schema, ['.subject', '.object']);
-            let subjectInfo = indexes.find(({path}) => path === '.subject');
-            let objectInfo = indexes.find(({path}) => path === '.object');
-            assert(subjectInfo != undefined && objectInfo != undefined, `module ${this._moduleName} primaryKey type can not translate to mysql key definition`);
-            let primaryKeyLength = subjectInfo.length + objectInfo.length + 1;//＋１是因为加多了一个连接符
-            let primaryKeyType = `VARCHAR(${primaryKeyLength})`;
-            assert(primaryKeyLength <= Math.floor(767 / 4), `key length is no longer than ${Math.floor(767 / 4)}`); 
-            sql = `CREATE TABLE IF NOT EXISTS ${shard.database}.${shard.table}
-                (
-                    doc json NULL,
-                    \`_id\` ${primaryKeyType} BINARY as (json_unquote(json_extract(\`doc\`,'$._id'))) stored primary key
-                )
-                ENGINE=InnoDB CHARSET=utf8mb4
-                ;`
-        }
-        await this._query(shard, sql);
-    }
-
-    async _createColumn(shard, ) {
+    async _createColumn(shard) {
         let indexes = Index.analysis(this._schema, this._type === "relation" ? ".subject" : []);
         for (let {path, type, indexType, length} of indexes) {
-            if (await this._query(shard, `SELECT * FROM information_schema.columns WHERE table_schema = '${shard.database}' AND table_name = '${shard.table}' AND column_name = '${path}'`) != undefined) continue;
+            if (
+                (
+                    await this._query(shard, `SELECT * FROM information_schema.columns WHERE table_schema = '${shard.database}' AND table_name = '${shard.table}' AND column_name = '${path}'`)
+                ).pop() != undefined
+            ) continue;
             let sql = undefined;
             if (indexType === "NORMAL") {
                 let mysqlDefinition = "";
@@ -96,7 +73,11 @@ module.exports = class {
     async _createIndex(shard) {
         let indexes = Index.analysis(this._schema, this._type === "relation" ? ".subject" : []);
         for (let {path, indexType} of indexes) {
-            if (await this._query(shard, `SELECT * FROM information_schema.statistics WHERE table_schema = '${shard.database}' AND table_name = '${shard.table}' AND index_name = '${path}'`) != undefined) continue;
+            if (
+                (
+                    await this._query(shard, `SELECT * FROM information_schema.statistics WHERE table_schema = '${shard.database}' AND table_name = '${shard.table}' AND index_name = '${path}'`)
+                ).pop() != undefined
+            ) continue;
             let sql = undefined;
             if (indexType === "NORMAL") {
                 sql = `CREATE INDEX \`${path}\` ON ${shard.database}.${shard.table} (\`${path}\`)`;
@@ -127,7 +108,7 @@ module.exports = class {
                     reject(err);
                     return;
                 }
-                resolve(rows[0]);
+                resolve(rows);
             });
         });
     }

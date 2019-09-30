@@ -3,3 +3,7 @@
 package-lock.json
 .gitignore
 .git
+/test/config/object/router/auto_fix_before.js
+/test/config/object/router/auto_fix.js
+/test/config/relation/router/user/auto_fix.js
+/test/config/relation/router/user/auto_fix_before.js

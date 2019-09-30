@@ -50,32 +50,32 @@ module.exports = class Wrapper {
     }
 
     async objectArrayNodeAppend(id, path, items) {
-        assert(await this.objectHas(id) == true, 'can not find record');
+        assert(await this.objectHas(id) === true, 'can not find record');
         await this._routerCurrent.objectArrayNodeAppend(id, path, items);
     }
 
     async objectArrayNodeUnshift(id, path, items) {
-        assert(await this.objectHas(id) == true, 'can not find record');
+        assert(await this.objectHas(id) === true, 'can not find record');
         await this._routerCurrent.objectArrayNodeUnshift(id, path, items);
     }
 
     async objectArrayNodeInsert(id, path, index, item) {
-        assert(await this.objectHas(id) == true, 'can not find record');
+        assert(await this.objectHas(id) === true, 'can not find record');
         await this._routerCurrent.objectArrayNodeInsert(id, path, index, item);
     }
 
     async objectArrayNodeDel(id, path, index) {
-        assert(await this.objectHas(id) == true, 'can not find record');
+        assert(await this.objectHas(id) === true, 'can not find record');
         await this._routerCurrent.objectArrayNodeDel(id, path, index);
     }
 
     async objectArrayNodePop(id, path) {
-        assert(await this.objectHas(id) == true, 'can not find record');
+        assert(await this.objectHas(id) === true, 'can not find record');
         return await this._routerCurrent.objectArrayNodePop(id, path);
     }
 
     async objectArrayNodeShift(id, path) {
-        assert(await this.objectHas(id) == true, 'can not find record');
+        assert(await this.objectHas(id) === true, 'can not find record');
         return await this._routerCurrent.objectArrayNodeShift(id, path);
     }
 
@@ -204,7 +204,7 @@ class Router {
         const {cache, persistence} = this._resolveMedia(id);
         let value = false;
         if (cache !== undefined) value = await cache.objectHas(id);
-        if (value == true) return value;
+        if (value === true) return value;
         if (persistence !== undefined) value = await persistence.objectHas(id);
         if (value === true && cache !== undefined) cache.objectSet(id, await persistence.objectGet(id));
         return value;
@@ -298,12 +298,12 @@ class Router {
     async objectFind({where, sort, limit}) {
         const {indexes} = require('../../global');
         let rows = [];
-        if (this._cache !== undefined && this._persistence == undefined) {
-            assert((this._cache.shards.length <= 1) || (sort == undefined && limit == undefined), `can not use sort or limit when shards more than one`);
+        if (this._cache !== undefined && this._persistence === undefined) {
+            assert((this._cache.shards.length <= 1) || (sort === undefined && limit === undefined), `can not use sort or limit when shards more than one`);
             let hadFind = false;
             for (let shard of this._cache.shards) {
                 let backend = Backend.create(shard, indexes[this._moduleName]);
-                if (backend.support.objectFind == false) break;
+                if (backend.support.objectFind === false) break;
                 Array.prototype.push.apply(rows, await backend.objectFind({where, sort, limit}));
                 hadFind = true;
             }
@@ -311,11 +311,11 @@ class Router {
         }
 
         if (this._persistence !== undefined) {
-            assert((this._persistence.shards.length <= 1) || (sort == undefined && limit == undefined), `can not use sort or limit when shards more than one`);
+            assert((this._persistence.shards.length <= 1) || (sort === undefined && limit === undefined), `can not use sort or limit when shards more than one`);
             let hadFind = false;
             for (let shard of this._persistence.shards) {
                 let backend = Backend.create(shard, indexes[this._moduleName]);
-                if (backend.support.objectFind == false) break;
+                if (backend.support.objectFind === false) break;
                 Array.prototype.push.apply(rows, await backend.objectFind({where, sort, limit}));
                 hadFind = true;
             }
@@ -329,11 +329,11 @@ class Router {
     async objectCount(where) {
         const {indexes} = require('../../global');
         let count = 0;
-        if (this._cache !== undefined && this._persistence == undefined) {
+        if (this._cache !== undefined && this._persistence === undefined) {
             let hadFind = false;
             for (let shard of this._cache.shards) {
                 let backend = Backend.create(shard, indexes[this._moduleName]);
-                if (backend.support.objectCount == false) break;
+                if (backend.support.objectCount === false) break;
                 count += await backend.objectCount(where);
                 hadFind = true;
             }
@@ -341,11 +341,11 @@ class Router {
         }
 
         if (this._persistence !== undefined) {
-            assert((this._persistence.shards.length <= 1) || (sort == undefined && limit == undefined), `can not use sort or limit when shards more than one`);
+            assert((this._persistence.shards.length <= 1) || (sort === undefined && limit === undefined), `can not use sort or limit when shards more than one`);
             let hadFind = false;
             for (let shard of this._persistence.shards) {
                 let backend = Backend.create(shard, indexes[this._moduleName]);
-                if (backend.support.objectCount == false) break;
+                if (backend.support.objectCount === false) break;
                 count += await backend.objectCount(where);
                 hadFind = true;
             }

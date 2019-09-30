@@ -8,17 +8,20 @@ const Type = require('@qtk/orm-framework').Type;
 module.exports = class extends ORM.BackendMedia {
     constructor(connParam, indexes) {
         super(connParam, indexes);
-        this._support = {
+        this._mutex = require('process-key-mutex');
+    }
+
+    get support() {
+        return {
             objectFind: false,
             objectCount: false,
-            objectArrayNodeAppend: true,
-            objectArrayNodeUnshift: true,
-            objectArrayNodeInsert: true,
-            objectArrayNodeDel: true,
-            objectArrayNodePop: true,
-            objectArrayNodeShift: true
+            objectArrayNodeAppend: false,
+            objectArrayNodeUnshift: false,
+            objectArrayNodeInsert: false,
+            objectArrayNodeDel: false,
+            objectArrayNodePop: false,
+            objectArrayNodeShift: false
         }
-        this._mutex = require('process-key-mutex');
     }
 
     static get media() {

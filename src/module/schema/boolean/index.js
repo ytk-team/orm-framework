@@ -1,18 +1,9 @@
-const BaseSchema = require('../base');
-
-module.exports = class BooleanSchema extends BaseSchema {
-    constructor() {
-        super();
-        this._current.set('type', 'boolean');
+const {schema: Schema} = require('@qtk/schema');
+module.exports = () => {
+    let schema = Schema.boolean();
+    schema.default = (value) => {
+        schema.normalize().custom('default', value);
+        return schema;
     }
-
-    enum(...enumArr) {
-        this._current.set('enum', enumArr);
-        return this;
-    }
-
-    default(value) {
-        this._current.set('default', value);
-        return this;
-    }
-};
+    return schema;
+}

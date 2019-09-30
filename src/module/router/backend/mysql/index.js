@@ -2,13 +2,19 @@ const Pool = require('./pool');
 const assert = require('assert');
 const Mysql = require('mysql');
 const uuid = require('uuid').v4;
+const Base = require('../base.js');
+const mutex = require('process-key-mutex');
 const {whereEq, whereNq, whereGe, whereGt, whereLe, whereLt, whereAnd, Type} = require('../../../logic');
 
 
-module.exports = class extends require('../base.js') {
+module.exports = class extends Base {
     constructor(connParam, indexes) {
         super(connParam, indexes);
-        this._support = {
+        this._mutex = mutex;
+    }
+
+    get support() {
+        return {
             objectFind: true,
             objectCount: true,
             objectArrayNodeAppend: true,
@@ -18,7 +24,6 @@ module.exports = class extends require('../base.js') {
             objectArrayNodePop: true,
             objectArrayNodeShift: true
         }
-        this._mutex = require('process-key-mutex');
     }
 
     static get media() {
@@ -28,7 +33,7 @@ module.exports = class extends require('../base.js') {
     async objectGet(id) {
         let sql = Mysql.format('SELECT doc FROM ?? WHERE ?? = ?', [this._connParam.table, '_id', id]);
         let [row] = await this._execute(sql);
-        if (row == undefined) return undefined;
+        if (row === undefined) return undefined;
         row = JSON.parse(row.doc);
         delete row._id;
         return row;
@@ -40,7 +45,7 @@ module.exports = class extends require('../base.js') {
         // await this._execute(sql);
         let sql = Mysql.format('SELECT count(_id) as count FROM ?? WHERE ?? = ?', [this._connParam.table, '_id', id]);
         let [{count}] = await this._execute(sql);
-        if (count == 0) {
+        if (count === 0) {
             sql = Mysql.format('INSERT INTO ?? SET ?? = ?', [this._connParam.table, 'doc', JSON.stringify(Object.assign({_id: id}, value))]);
         }
         else {
@@ -84,7 +89,7 @@ module.exports = class extends require('../base.js') {
 
     async relationList(subject, sort = undefined, limit = undefined, filter = undefined) {
         return this.objectFind({
-            where: filter == undefined ? whereEq('.subject', subject) : whereAnd(whereEq('.subject', subject), filter),
+            where: filter === undefined ? whereEq('.subject', subject) : whereAnd(whereEq('.subject', subject), filter),
             sort,
             limit
         });
@@ -92,7 +97,7 @@ module.exports = class extends require('../base.js') {
 
     async relationCount(subject, filter = undefined) {
         let {query, binds} = this._parseWhereToMysql(
-            filter == undefined ? whereEq('.subject', subject) : whereAnd(whereEq('.subject', subject), filter)
+            filter === undefined ? whereEq('.subject', subject) : whereAnd(whereEq('.subject', subject), filter)
         );
         let sql = Mysql.format(`SELECT count(_id) as count FROM ?? WHERE ${query}`, [this._connParam.table]);
         let [{count}] = await this._execute(sql, binds);
@@ -133,7 +138,7 @@ module.exports = class extends require('../base.js') {
             let [row] = await this._execute(sql);
             assert(row != undefined, 'can not find record');
             let arr = JSON.parse(row.arr);
-            if (arr.length == 0) return undefined;
+            if (arr === null || arr.length === 0) return undefined;
             sql = Mysql.format('UPDATE ?? SET doc=JSON_REMOVE(doc, ?) WHERE ?? = ?', [this._connParam.table, `$${path}[${arr.length - 1}]`, '_id', id]);
             await this._execute(sql);
             return arr.pop();
@@ -146,7 +151,7 @@ module.exports = class extends require('../base.js') {
             let [row] = await this._execute(sql);
             assert(row != undefined, 'can not find record');
             let item = JSON.parse(row.first);
-            if (item == null) return undefined;
+            if (item === null) return undefined;
             sql = Mysql.format('UPDATE ?? SET doc=JSON_REMOVE(doc, ?) WHERE ?? = ?', [this._connParam.table, `$${path}[0]`, '_id', id]);
             await this._execute(sql);
             return item;
@@ -339,8 +344,8 @@ module.exports = class extends require('../base.js') {
     }
 
     _getColumnName(fieldName) {
-        if (this._indexes.findIndex(_ => _ == fieldName) != -1) {
-            return `\`${fieldName == ".id" ? "_id" : fieldName}\``;
+        if (this._indexes.findIndex(_ => _ === fieldName) != -1) {
+            return `\`${fieldName === ".id" ? "_id" : fieldName}\``;
         }
         else {
             return `doc->>"$${fieldName}"`;

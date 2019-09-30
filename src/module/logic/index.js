@@ -1,3 +1,4 @@
+const LogicBase = require('./base');
 const Type = {
     WhereAnd: require('./where/and'),
     WhereOr: require('./where/or'),
@@ -16,33 +17,91 @@ const Type = {
     Limit: require('./limit'),
 }
 
-module.exports = {
-    Type,
-    whereAnd: (...items) => new Type.WhereAnd(items),
-    whereOr: (...items) => new Type.WhereOr(items),
-    whereNot: (item) => new Type.WhereNot(item),
-    whereIn: (field, ...values) => new Type.WhereIn(field, values),
-    whereLike: (field, value) => new Type.WhereLike(field, value),
-    whereEq: (field, value) => new Type.WhereEq(field, value),
-    whereNq: (field, value) => new Type.WhereNq(field, value),
-    whereGe: (field, value) => new Type.WhereGe(field, value),
-    whereGt: (field, value) => new Type.WhereGt(field, value),
-    whereLe: (field, value) => new Type.WhereLe(field, value),
-    whereLt: (field, value) => new Type.WhereLt(field, value),
-    whereContain: (field, value) => new Type.WhereContain(field, value),
-    whereBetween: (field, from, to) => new Type.WhereBetween(field, from, to),
-    sort: (field, order = "ASC") => new Type.Sort(field, order),
-    limit: (limit, skip = 0) => new Type.Limit(limit, skip),
+module.exports = class {
+    static get Type() {
+        return Type;
+    }
 
-    toLogic(json) {
-        if (Array.isArray(json)) return json.map(_ => this.toLogic(_));
+    static whereAnd(...items) {
+        return new Type.WhereAnd(items);
+    }
 
-        switch(json.type) {
+    static whereOr(...items) {
+        return new Type.WhereOr(items);
+    }
+
+    static whereNot(item) {
+        return new Type.WhereNot(item);
+    }
+
+    static whereIn(field, ...values) {
+        return new Type.WhereIn(field, values);
+    }
+
+    static whereLike(field, value) {
+        return new Type.WhereLike(field, value);
+    }
+
+    static whereEq(field, value) {
+        return new Type.WhereEq(field, value);
+    }
+
+    static whereNq(field, value) {
+        return new Type.WhereNq(field, value);
+    }
+
+    static whereGe(field, value) {
+        return new Type.WhereGe(field, value);
+    }
+
+    static whereGt(field, value) {
+        return new Type.WhereGt(field, value);
+    }
+
+    static whereLe(field, value) {
+        return new Type.WhereLe(field, value);
+    }
+
+    static whereLt(field, value) {
+        return new Type.WhereLt(field, value);
+    }
+
+    static whereContain(field, value) {
+        return new Type.WhereContain(field, value);
+    }
+
+    static whereBetween(field, from, to) {
+        return new Type.WhereBetween(field, from, to);
+    }
+
+    static sort(field, order = "ASC") {
+        return new Type.Sort(field, order);
+    }
+
+    static limit(limit, skip = 0) {
+        return new Type.Limit(limit, skip);
+    }
+
+
+    static normalize(logic) {
+        if (Array.isArray(logic)) {
+            if (logic.every(_ => !(_ instanceof LogicBase))) {
+                return logic.map(_ => this.normalize(_));
+            }
+            else {
+                return logic;
+            }
+        }
+        else {
+            if(logic instanceof LogicBase) return logic;
+        }
+
+        switch(logic.type) {
             case 'WhereAnd':
             case 'WhereOr':
-                return new Type[json.type](json.fields._items.map(_ => this.toLogic(_)));
+                return new Type[logic.type](logic.fields._items.map(_ => this.normalize(_)));
             case 'WhereIn':   
-                return new Type[json.type](json.fields._field ,json.fields._items); 
+                return new Type[logic.type](logic.fields._field ,logic.fields._items); 
             case 'WhereLike':
             case 'WhereEq':
             case 'WhereNq':
@@ -51,17 +110,17 @@ module.exports = {
             case 'WhereLe':
             case 'WhereLt':
             case 'WhereContain':            
-                return new Type[json.type](json.fields._field ,json.fields._value); 
+                return new Type[logic.type](logic.fields._field ,logic.fields._value); 
             case 'WhereNot':
-                return new Type[json.type](this.toLogic(json.fields._item));
+                return new Type[logic.type](this.normalize(logic.fields._item));
             case 'WhereBetween':
-                return new Type[json.type](json.fields._field, json.fields._from, json.fields._to);
+                return new Type[logic.type](logic.fields._field, logic.fields._from, logic.fields._to);
             case 'Sort':
-                return new Type[json.type](json.fields._field, json.fields._order);  
+                return new Type[logic.type](logic.fields._field, logic.fields._order);  
             case 'Limit':
-                return new Type[json.type](json.fields._limit, json.fields._skip);  
+                return new Type[logic.type](logic.fields._limit, logic.fields._skip);  
             default:
-                throw new Error(`不支持${json.type}反序列化`);
+                throw new Error(`不支持${logic.type}反序列化`);
         }
     }
 }

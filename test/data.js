@@ -18,16 +18,16 @@ module.exports = {
         }
     ],
     Messages: [{
-            id: 1,
-            title: "hello",
-            content: "hey",
-            sendTime: 1516538014
-        }, {
-            id: 2,
-            title: "bye",
-            content: "....",
-            sendTime: 1516538014
-        }
+        id: 1,
+        title: "hello",
+        content: "hey",
+        sendTime: 1516538014
+    }, {
+        id: 2,
+        title: "bye",
+        content: "....",
+        sendTime: 1516538014
+    }
     ],
     Users: [{
         id: '0000000000000001',
@@ -40,10 +40,7 @@ module.exports = {
             lat: '22.27'
         },
         isVip: false,
-        friends: [],
-        extraObject: {
-            count: 1
-        }
+        friends: []
     }, {
         id: '0000000000000002',
         name: 'Jessica',
@@ -58,9 +55,7 @@ module.exports = {
         friends: [{
             fid: '0000000000000003',
             time: 1516538014
-        }],
-        extraArray: ["1","2","3"],
-        extraInteger: 0
+        }]
     }, {
         id: '000000000000000e',
         name: 'Ken',
@@ -78,8 +73,7 @@ module.exports = {
         }, {
             fid: '0000000000000002',
             time: 1516538015
-        }],
-        extraBoolean: true
+        }]
     }
     ]
 }

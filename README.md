@@ -422,28 +422,35 @@ module.exports = {
 - Object``find``、``count``,Relation``list``,``count``考虑到可能会涉及多条数据情况，为了不影响性能，故上述方法不支持数据热迁移
 - 当Router里配置``cache``与``persistence``时，即开启数据缓存功能(加速读)，此情况存在有些数据还未加载到``cache``情况，故Object``find``、``count``、Relation``list``、``count``将会直接读取``persistence``来保证数据的准确性
 - Object``find``提供的是Object搜索功能，若Router里存在多个``shards``时，即开启数据分片功能，由于无法根据id定位到具体的分片，故会查询所有的分片信息，并合并结果返回．在此种情况下无法进行分页排序，故不支持``sort``与``limit``．
+- 使用whereContain时，其实现原理是全文搜索，故需要保证**字段内容长度 >=ft_min_word_len ,数据库默认ft_min_word_len为4**
 
 ## 自定义存储介质
 框架内部支持mysql与redis两种存储介质，若想换一种存储媒介或者重新设计底层数据结构的话，那么可以继承框架的``BackendMedia``基类，实现指定的函数功能后，以插件的形式注册到框架上．那么即可无痛更换，而不用修改任何代码．
 ### 构造函数
-负责初始化存储媒介的链接及媒介功能支持配置．媒介可以不实现某些数据操作高级功能，此时必须在介质初始化时关闭该功能支持，否则框架将会调用该函数而导致报错．构造函数有两个参数：
+负责初始化存储媒介的链接．构造函数有两个参数：
+
 ``connParam``: 经过哈希函数计算得到的分片信息
+
 ``indexes``: 该``Object``／``Relation``的字段索引列表
 ```js
 constructor(connParam, indexes) {
     super(connParam, indexes);
-    this._support = {
-        objectFind: false,
-        objectCount: false,
-        objectArrayNodeAppend: false,
-        objectArrayNodeUnshift: false,
-        objectArrayNodeInsert: false,
-        objectArrayNodeDel: false,
-        objectArrayNodePop: false,
-        objectArrayNodeShift: false
-    }
 }
 ```
+
+connParam值例子：
+```js
+{
+    "media":"mysql",
+    "host":"localhost",
+    "port":3308,
+    "user":"root",
+    "password":"",
+    "database":"db_orm",
+    "table":"o_user"
+}
+```
+
 indexes值例子：
 ```js
 [
@@ -455,6 +462,7 @@ indexes值例子：
     '.friends[*].fid'　//数组索引
 ]
 ```
+
 ### 插件名
 实现静态``media``,返回值与路由文件里``shards``里配置的``media``字符值相同
 ```js
@@ -488,6 +496,25 @@ static get media() { //set media name
 |relationCount|(subject, filter？)|integer|0|是|统计关系中的对象，可筛选|
 |relationClear|(subject)|无|无|是|清空关系里所有对象|
 
+
+### 支持的高级数据操作配置
+媒介可以不实现上一小节某些数据高级操作功能，此时必须在介质配置里时关闭该功能支持，否则框架调用该函数会导致报错．**默认都不支持**
+
+```js
+get support() {
+    return {
+        objectFind: false,
+        objectCount: false,
+        objectArrayNodeAppend: false,
+        objectArrayNodeUnshift: false,
+        objectArrayNodeInsert: false,
+        objectArrayNodeDel: false,
+        objectArrayNodePop: false,
+        objectArrayNodeShift: false
+    }
+}
+```
+
 ### 解析Logic
 逻辑分``where``,``sort``,``limit``三类，``objectFind``,``objectCount``,``relationList``, ``relationCount``函数传入的是标准逻辑对象,需要开发者自行转化成对应媒介数据的操作逻辑．所有标准逻辑对象都在``ORM.Logic.Type``定义
 
@@ -515,5 +542,12 @@ static get media() { //set media name
 
 ## 更新日志
 - 2019-06-08: Logic对象支持转换为json对象。同时在原使用Logic对象的地方支持直接传入json对象进行查询
+- 2019-09-30: 
+    - 重写数据默认值填充器
+    - 更新数据校验器为[qtk-validator](https://www.npmjs.com/package/@qtk/schema-validator),提示更加友好
+    - core部分代码整理，优化执行速度
+    - 去除数据取操作时做数据校验
+    - bug修复
+    - 增加orm_rebuild_column_index重建表列/索引命令
 ## 致谢
 schema语法引用的是[semantic-schema](https://www.npmjs.com/package/semantic-schema)项目代码，感谢Magnus同学的支持

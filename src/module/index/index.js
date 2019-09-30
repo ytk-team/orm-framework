@@ -5,14 +5,14 @@ module.exports = {
                 case "string":
                 case "integer":
                 case "number":
-                    if (schema.index == true || additionIndexPaths.includes(path)) {
+                    if (schema.index === true || additionIndexPaths.includes(path)) {
                         return [Object.assign({path: `${path}`, indexType: 'NORMAL'}, schema.getIndexInfo(needCheckLength))]
                     }
                     else {
                         return [];
                     }
                 case "object":
-                    if (schema.properties == undefined) return [];//只支持确定的key
+                    if (schema.properties === undefined) return [];//只支持确定的key
                     return Object.keys(schema.properties).reduce((prev, key) => prev.concat(scan(schema.properties[key], `${path}.${key}`, needCheckLength)), [])
                 case "array":
                     switch(schema.items.type) {

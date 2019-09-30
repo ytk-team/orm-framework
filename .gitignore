@@ -4,3 +4,7 @@ package-lock.json
 /test/config/object/router/message.js
 /test/config/object/router/user.js
 /test/config/relation/router/user/message.js
+/test/config/object/router/auto_fix_before.js
+/test/config/object/router/auto_fix.js
+/test/config/relation/router/user/auto_fix.js
+/test/config/relation/router/user/auto_fix_before.js

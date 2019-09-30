@@ -12,6 +12,10 @@ ORM.setup({
 const ObjectUser = new ORM.Object('user');
 const ObjectMessage = new ORM.Object('message');
 const RelationUserMessage = new ORM.Relation('user.message');
+const ObjectAutoFix = new ORM.Object('auto_fix');
+const ObjectAutoFixBefore = new ORM.Object('auto_fix_before');
+const RelationObjectAutoFix = new ORM.Relation('user.auto_fix');
+const RelationObjectAutoFixBefore = new ORM.Relation('user.auto_fix_before');
 
 const {Users, Messages, UserMessages} = require('./data');
 
@@ -26,7 +30,9 @@ describe('#time', function () {
             ObjectUser.del(Users[1].id),
             ObjectUser.del(Users[2].id),
             ObjectMessage.del(Messages[0].id),
-            ObjectMessage.del(Messages[1].id)
+            ObjectMessage.del(Messages[1].id),
+            ObjectAutoFix.del("0000000000000000"),
+            RelationObjectAutoFix.clear("0000000000000000")
         ])
         console.log(`clear data: ${(process.uptime() - time) * 1000 / times} ms`);
     });
@@ -438,5 +444,84 @@ describe('#time', function () {
             await RelationUserMessage.clear(Users[0].id);
         }
         console.log(`relation-clear: ${(process.uptime() - time) * 1000 / times} ms`);
+    });
+
+    it('[auto-fix-object-get]', async function() {
+        await ObjectAutoFixBefore.set({
+            id: "0000000000000000"
+        });
+        var time = process.uptime();
+        for (let i = 0; i < times; i++) {
+            await ObjectAutoFix.get("0000000000000000");
+        }
+        console.log(`auto-fix-object-get: ${(process.uptime() - time) * 1000 / times} ms`);
+    });
+
+    it('[auto-fix-object-find]', async function() {
+        await ObjectAutoFixBefore.set({
+            id: "0000000000000000"
+        });
+        var time = process.uptime();
+        for (let i = 0; i < times; i++) {
+            await ObjectAutoFix.find();
+        }
+        console.log(`auto-fix-object-find: ${(process.uptime() - time) * 1000 / times} ms`);
+    });
+
+    it('[auto-fix-object-array-node-pop]', async function() {
+        await ObjectAutoFixBefore.set({
+            id: "0000000000000000"
+        });
+        var time = process.uptime();
+        for (let i = 0; i < times; i++) {
+            await ObjectAutoFix.arrayNodePop(
+                "0000000000000000",
+                ".friends"
+            );
+        }
+        console.log(`auto-fix-object-array-node-pop: ${(process.uptime() - time) * 1000 / times} ms`);
+    });
+
+    it('[auto-fix-object-array-node-shift]', async function() {
+        await ObjectAutoFixBefore.set({
+            id: "0000000000000000"
+        });
+        var time = process.uptime();
+        for (let i = 0; i < times; i++) {
+            await ObjectAutoFix.arrayNodeShift(
+                "0000000000000000",
+                ".friends"
+            );
+        }
+        console.log(`auto-fix-object-array-node-shift: ${(process.uptime() - time) * 1000 / times} ms`);
+    });
+
+    it('[auto-fix-relation-fetch]', async function() {
+        await RelationObjectAutoFixBefore.put({
+            subject: "0000000000000000",
+            object: "0000000000000000"
+        });
+        var time = process.uptime();
+        for (let i = 0; i < times; i++) {
+            await RelationObjectAutoFix.fetch(
+                "0000000000000000",
+                "0000000000000000"
+            );
+        }
+        console.log(`auto-fix-relation-fetch: ${(process.uptime() - time) * 1000 / times} ms`);
+    });
+
+    it('[auto-fix-relation-list]', async function() {
+        await RelationObjectAutoFixBefore.put({
+            subject: "0000000000000000",
+            object: "0000000000000000"
+        });
+        var time = process.uptime();
+        for (let i = 0; i < times; i++) {
+            await RelationObjectAutoFix.list(
+                "0000000000000000"
+            );
+        }
+        console.log(`auto-fix-relation-list: ${(process.uptime() - time) * 1000 / times} ms`);
     });
 });

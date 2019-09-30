@@ -2,7 +2,10 @@ module.exports = class {
     constructor(connParam, indexes) {
         this._connParam = connParam;
         this._indexes = indexes;
-        this._support = {
+    }
+
+    get support() {
+        return {
             objectFind: false,
             objectCount: false,
             objectArrayNodeAppend: false,
@@ -12,10 +15,6 @@ module.exports = class {
             objectArrayNodePop: false,
             objectArrayNodeShift: false
         }
-    }
-
-    get support() {
-        return this._support;
     }
 
     static get media() {

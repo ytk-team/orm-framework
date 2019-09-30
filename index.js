@@ -1,12 +1,3 @@
-const BaseSchema  = require('./src/module/schema/base/index.js');
-const ObjectSchema  = require('./src/module/schema/object/index.js');
-const ArraySchema   = require('./src/module/schema/array');
-const StringSchema  = require('./src/module/schema/string');
-const NumberSchema  = require('./src/module/schema/number');
-const IntegerSchema = require('./src/module/schema/integer');
-const BooleanSchema = require('./src/module/schema/boolean');
-const NullSchema    = require('./src/module/schema/null');
-
 module.exports = {
     Object: require('./src/core/object'),
     Relation: require('./src/core/relation'),

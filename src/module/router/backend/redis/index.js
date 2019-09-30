@@ -1,11 +1,17 @@
 const assert = require('assert');
 const Pool = require('./pool');
 const {Type} = require('../../../logic');
+const Base = require('../base.js');
+const mutex = require('process-key-mutex');
 
-module.exports = class extends require('../base.js') {
+module.exports = class extends Base {
     constructor(connParam, indexes) {
         super(connParam, indexes);
-        this._support = {
+        this._mutex = mutex;
+    }
+
+    get support() {
+        return {
             objectFind: false,
             objectCount: false,
             objectArrayNodeAppend: true,
@@ -15,7 +21,6 @@ module.exports = class extends require('../base.js') {
             objectArrayNodePop: true,
             objectArrayNodeShift: true
         }
-        this._mutex = require('process-key-mutex');
     }
 
     static get media() {
@@ -24,7 +29,7 @@ module.exports = class extends require('../base.js') {
 
     async objectGet(id) {
         let result = await this._execute('get', `${this._connParam.bucket}.${id}`);
-        return result == null ? undefined : JSON.parse(result);
+        return result === null ? undefined : JSON.parse(result);
     }
 
     async objectSet(id, value) {
@@ -80,7 +85,9 @@ module.exports = class extends require('../base.js') {
         return await this._mutex.lock(`${this._connParam.bucket}.${id}`, async() => {
             let value = await this.objectGet(id);
             assert(value != undefined, 'can not find record');
-            let item = this._getNodeValue(value, path).pop();
+            let items = this._getNodeValue(value, path);
+            if (items === undefined) return undefined;
+            let item = items.pop();
             await this.objectSet(id, value);
             return item;
         });
@@ -90,7 +97,9 @@ module.exports = class extends require('../base.js') {
         return await this._mutex.lock(`${this._connParam.bucket}.${id}`, async() => {
             let value = await this.objectGet(id);
             assert(value != undefined, 'can not find record');
-            let item = this._getNodeValue(value, path).shift();
+            let items = this._getNodeValue(value, path)
+            if (items === undefined) return undefined;
+            let item = items.shift();
             await this.objectSet(id, value);
             return item;
         });
@@ -98,7 +107,7 @@ module.exports = class extends require('../base.js') {
 
     async relationFetch(subject, object) {
         let result = await this._execute('hget', `${this._connParam.bucket}.${subject}`, object);
-        return result == null ? undefined : JSON.parse(result);
+        return result === null ? undefined : JSON.parse(result);
     }
 
     async relationPut(relation) {
@@ -118,7 +127,7 @@ module.exports = class extends require('../base.js') {
         if (filter != undefined) list = list.filter(_ => this._assert(filter, _));
         if (sort != undefined) {
             [].concat(sort).map(({field, order}) => {
-                list.sort((l, r) => order == "ASC" ? this._getNodeValue(l, field) - this._getNodeValue(r, field) : this._getNodeValue(r, field) - this._getNodeValue(l, field));
+                list.sort((l, r) => order === "ASC" ? this._getNodeValue(l, field) - this._getNodeValue(r, field) : this._getNodeValue(r, field) - this._getNodeValue(l, field));
             })
         }
         if (limit != undefined) {
@@ -128,7 +137,7 @@ module.exports = class extends require('../base.js') {
     }
 
     async relationCount(subject, filter = undefined) {
-        if (filter == undefined) {
+        if (filter === undefined) {
             return await this._execute('hlen', `${this._connParam.bucket}.${subject}`);
         }
         else {
@@ -152,7 +161,7 @@ module.exports = class extends require('../base.js') {
 
     _getNodeValue(object, path) {
         return path.split('.').slice(1).reduce((prev, curr) => {
-            if (curr == '') return prev;
+            if (curr === '') return prev;
             if (/\[\*\]/.test(curr)) { //[*]获取数组所有元素
                 return object[curr.substring(0, curr.length - 3)];
             }
@@ -189,11 +198,11 @@ module.exports = class extends require('../base.js') {
                 .map((value, index, arr) => {
                     switch(value) {
                         case "_":
-                            var _ = index == 0 || escape == false ? '(.{1})' : value;
+                            var _ = index === 0 || escape === false ? '(.{1})' : value;
                             if (escape) escape = !escape;
                             return _;
                         case "%":
-                            var _ = index == 0 || escape == false ? '(.*)' : value;
+                            var _ = index === 0 || escape === false ? '(.*)' : value;
                             if (escape) escape = !escape;
                             return _;
                         case "\\":

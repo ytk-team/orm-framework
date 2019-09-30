@@ -5,16 +5,17 @@
   "bin": {
     "orm_build_mysql": "bin/build_mysql/index.js",
     "orm_destroy_mysql": "bin/destroy_mysql/index.js",
-    "orm_purge_data": "bin/purge_data/index.js"
+    "orm_purge_data": "bin/purge_data/index.js",
+    "orm_rebuild_column_index": "bin/rebuild_column_index_mysql/index.js"
   },
   "bugs": {
     "url": "https://github.com/vanchu001/orm-framework/issues"
   },
   "bundleDependencies": false,
   "dependencies": {
+    "@qtk/schema": "^0.0.7",
+    "@qtk/schema-validator": "0.0.5",
     "assert": "^1.4.1",
-    "isobject": "^3.0.1",
-    "json-hash": "^1.2.0",
     "klaw-sync": "^3.0.2",
     "mocha": "^5.2.0",
     "mysql": "^2.16.0",
@@ -44,5 +45,5 @@
   "scripts": {
     "test": "mocha"
   },
-  "version": "3.1.7"
+  "version": "3.2.0"
 }

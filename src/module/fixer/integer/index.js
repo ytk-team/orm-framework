@@ -1,3 +1,3 @@
 module.exports = (schema, value) => {
-    if (schema.default != undefined && value == undefined) return schema.default;
+    return (schema.default !== undefined && value === undefined) ? schema.default : value;
 }

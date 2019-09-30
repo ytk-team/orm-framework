@@ -1,4 +1,3 @@
-const BaseSchema  = require('../schema/base');
 const ObjectSchema  = require('../schema/object');
 const ArraySchema   = require('../schema/array');
 const StringSchema  = require('../schema/string');
@@ -9,34 +8,34 @@ const NullSchema    = require('../schema/null');
 
 module.exports = {
     object: (properties) => {
-        let schema = new ObjectSchema();
+        let schema = ObjectSchema();
         if (properties) schema.properties(properties);
         return schema;
     }, 
     array: (item) => {
-        let schema = new ArraySchema();
+        let schema = ArraySchema();
         if (item) schema.item(item);
         return schema;
     }, 
     string: (pattern) => {
-        let schema = new StringSchema();
+        let schema = StringSchema();
         if (pattern) schema.pattern(pattern);
         return schema;
     }, 
     integer: (min, max) => {
-        let schema = new IntegerSchema();
+        let schema = IntegerSchema();
         if(min) schema.min(min);
         if(max) schema.max(max);
         return schema;
     }, 
     number: (min, max) => {
-        let schema = new NumberSchema();
+        let schema = NumberSchema();
         if(min) schema.min(min);
         if(max) schema.max(max);
         return schema;
     }, 
-    boolean: () => new BooleanSchema(), 
-    NULL: () => new NullSchema(),
-    empty: () => new NullSchema(),
-    invalid: () => new BaseSchema().invalid()
+    boolean: () => BooleanSchema(), 
+    NULL: () => NullSchema(),
+    empty: () => NullSchema(),
+    invalid: () => NullSchema().invalid()
 };

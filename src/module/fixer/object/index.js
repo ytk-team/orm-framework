@@ -43,7 +43,11 @@ function propertiesFix(requiredProperties, value, strict) {
 
     let keys = new Set(Object.keys(value));
     for (let standardKey in requiredProperties) {
-        if (!keys.has(standardKey) || requiredProperties[standardKey].type === "object") {
+        if (
+            !keys.has(standardKey) || 
+            requiredProperties[standardKey].type === "object" || 
+            requiredProperties[standardKey].type === "array"
+        ) {
             let fixResult = undefined;
             switch (requiredProperties[standardKey].type) {
                 case 'boolean':

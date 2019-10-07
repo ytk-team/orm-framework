@@ -2,10 +2,10 @@ const {integer, boolean, string, object, array, number, empty, NULL} = require('
 
 module.exports = object({
     id: string().length(16),
-    friends: array().item({
+    friends: array().item(object({
         fid: string(),
         time: integer()
-    }),
+    })),
     autoFixObject: {
         count: integer()
     },

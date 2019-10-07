@@ -532,7 +532,7 @@ describe('#basic', function () {
 
     it('[auto-fix-object-get]', async function() {
         await ObjectAutoFixBefore.set({
-            id: "0000000000000000"
+            id: "0000000000000000",
         });
         let fix = await ObjectAutoFix.get("0000000000000000");
         assert(
@@ -540,6 +540,38 @@ describe('#basic', function () {
             fix.autoFixObject.count === 10 &&
             Array.isArray(fix.friends) &&
             fix.friends.length === 2 &&
+            fix.friends.every(_ => {
+                return _ !== undefined && _.fid === "fid" && _.time === 1
+            }) &&
+            Array.isArray(fix.autoFixArray) &&
+            fix.autoFixArray.length === 2 &&
+            fix.autoFixArray.every(_ => {
+                return _ === "111"
+            }) &&
+            fix.autoFixInteger === 0 &&
+            fix.autoFixNumber === 0.9 &&
+            fix.autoFixBoolean === false &&
+            fix.autoFixString === "default" &&
+            fix.autoFixNull === null &&
+            fix.autoFixEmpty === null
+            , 
+            'auto fix object get failed'
+        );
+    });
+
+    it('[auto-fix-object-get-half]', async function() {
+        await ObjectAutoFixBefore.set({
+            id: "0000000000000000",
+            friends: [{
+                fid: "fid"
+            }],
+        });
+        let fix = await ObjectAutoFix.get("0000000000000000");
+        assert(
+            fix.autoFixObject != undefined &&
+            fix.autoFixObject.count === 10 &&
+            Array.isArray(fix.friends) &&
+            fix.friends.length === 1 &&
             fix.friends.every(_ => {
                 return _ !== undefined && _.fid === "fid" && _.time === 1
             }) &&

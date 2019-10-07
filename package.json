@@ -14,7 +14,7 @@
   "bundleDependencies": false,
   "dependencies": {
     "@qtk/schema": "^0.0.7",
-    "@qtk/schema-validator": "0.0.5",
+    "@qtk/schema-validator": "0.1.0",
     "assert": "^1.4.1",
     "klaw-sync": "^3.0.2",
     "mocha": "^5.2.0",
@@ -45,5 +45,5 @@
   "scripts": {
     "test": "mocha"
   },
-  "version": "3.2.3"
+  "version": "3.2.4"
 }

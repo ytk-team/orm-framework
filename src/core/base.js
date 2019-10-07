@@ -44,7 +44,7 @@ module.exports = class {
 
         let schema = this._getNodeSchema(schemaPath);
 
-        validator = QTKValidator.from(schema);
+        validator = QTKValidator.fromJSONSchema(schema);
         this._validatorCache.set(schemaPath, validator);
 
         return validator;

@@ -9,11 +9,15 @@ module.exports = object({
     autoFixObject: {
         count: integer()
     },
+    autoFixObjectDefaultEmpty: object({
+        count: integer()
+    }),
     autoFixArray: array(string()),
+    autoFixArrayDefaultEmpty: array(string()),
     autoFixInteger: integer(),
     autoFixNumber: number(),
     autoFixBoolean: boolean(),
     autoFixString: string(),
     autoFixNull: NULL(),
-    autoFixEmpty: empty(),
+    autoFixEmpty: empty()
 }).require('id');

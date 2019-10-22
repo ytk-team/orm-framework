@@ -5,5 +5,11 @@ module.exports = () => {
         schema.normalize().custom('defaultAmount', value);
         return schema;
     }
+
+    schema.defaultEmpty = () => {
+        schema.normalize().custom('default', []);
+        return schema;
+    }
+
     return schema;
 }

@@ -690,6 +690,11 @@ declare namespace TypeClass {
         additionalProperties(isAllow?: boolean): this;
 
         /**
+         * 对象默认置空值，当其被require，取操作为undefined时，自动补上空对象
+         */     
+        defaultEmpty(): this;
+
+        /**
          * 分情况描述-if
          */        
         if: this;
@@ -741,10 +746,15 @@ declare namespace TypeClass {
         item(schemaOrSugar: any): this;
 
         /**
-         * 数组默认值数量(配合item里的default)，当其被require，取操作为undefined时，自动补上n个item默认值
+         * 数组默认值数量(需要配合item里的default！)，当其被require，取操作为undefined时，自动补上n个item默认值
          * @param {number} num 数量
          */      
         defaultAmount(num: number): this;
+
+        /**
+         * 数组默认置空值，当其被require，取操作为undefined时，自动补上空数组
+         */     
+        defaultEmpty(): this;
     }    
 }
 

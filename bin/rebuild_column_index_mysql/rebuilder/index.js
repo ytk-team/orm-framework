@@ -16,8 +16,10 @@ module.exports = class {
             if (shard.media !== 'mysql') continue;
             
             await this._dropColumnAndIndex(shard);
+            await this._createPrimaryKey(shard);
             await this._createColumn(shard);
             await this._createIndex(shard);
+            
         }
     }
 
@@ -26,12 +28,36 @@ module.exports = class {
             shard, 
             `SELECT *
             FROM INFORMATION_SCHEMA.STATISTICS i 
-            WHERE TABLE_SCHEMA = '${shard.database}' AND TABLE_NAME = '${shard.table}' AND i.INDEX_NAME <> 'PRIMARY';`
+            WHERE TABLE_SCHEMA = '${shard.database}' AND TABLE_NAME = '${shard.table}';`
         );
         for (let {TABLE_SCHEMA, TABLE_NAME, COLUMN_NAME, INDEX_NAME} of dropSqls) {
-            await this._query(shard, `ALTER TABLE ${TABLE_SCHEMA}.${TABLE_NAME} DROP INDEX \`${COLUMN_NAME}\`;`);
-            await this._query(shard, `ALTER TABLE ${TABLE_SCHEMA}.${TABLE_NAME} DROP COLUMN \`${INDEX_NAME}\`;`);
+            await this._query(shard, `ALTER TABLE ${TABLE_SCHEMA}.${TABLE_NAME} DROP COLUMN \`${COLUMN_NAME}\`;`);
         }
+    }
+
+    async _createPrimaryKey(shard) {
+        let sql = "";
+        if (this._type === "object") {
+            let indexes = Index.analysis(this._schema, ['.id']);
+            let idInfo = indexes.find(({path}) => path === '.id');
+            assert(idInfo != undefined, `module ${this._moduleName} primaryKey type can not translate to mysql key definition`);
+            let primaryKeyLength = idInfo.length;
+            let primaryKeyType = `VARCHAR(${primaryKeyLength})`;
+            assert(primaryKeyLength <= Math.floor(767 / 4), `key length is no longer than ${Math.floor(767 / 4)}`); 
+            sql = `ALTER TABLE ${shard.database}.${shard.table} ADD \`_id\` ${primaryKeyType} BINARY as (json_unquote(json_extract(\`doc\`,'$._id'))) STORED PRIMARY KEY`;
+        }
+        else {
+            let indexes = Index.analysis(this._schema, ['.subject', '.object']);
+            let subjectInfo = indexes.find(({path}) => path === '.subject');
+            let objectInfo = indexes.find(({path}) => path === '.object');
+            assert(subjectInfo != undefined && objectInfo != undefined, `module ${this._moduleName} primaryKey type can not translate to mysql key definition`);
+            let primaryKeyLength = subjectInfo.length + objectInfo.length + 1;//＋１是因为加多了一个连接符
+            let primaryKeyType = `VARCHAR(${primaryKeyLength})`;
+            assert(primaryKeyLength <= Math.floor(767 / 4), `key length is no longer than ${Math.floor(767 / 4)}`); 
+            sql = `ALTER TABLE ${shard.database}.${shard.table} ADD \`_id\` ${primaryKeyType} BINARY as (json_unquote(json_extract(\`doc\`,'$._id'))) STORED PRIMARY KEY`;
+
+        }
+        await this._query(shard, sql);
     }
 
     async _createColumn(shard) {

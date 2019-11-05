@@ -5,7 +5,7 @@ let NumberFixer = undefined;
 let StringFixer = undefined;
 let ArrayFixer = undefined;
 let ObjectFixer = undefined;
-
+const assert = require('power-assert')
 module.exports = class Fixer {
     constructor(schema) {
         this._schema = schema;
@@ -27,7 +27,7 @@ module.exports = class Fixer {
             case 'boolean':
                 return schema.default !== undefined;
             case 'array':
-                return this.hasDefaultKeyword(schema.items);
+                return schema.default !== undefined || this.hasDefaultKeyword(schema.items);
             case 'integer':
                 return schema.default !== undefined;
             case 'number':
@@ -37,7 +37,19 @@ module.exports = class Fixer {
             case 'null':
                 return schema.default !== undefined;
             case 'object':
-                if (schema.patternProperties !== undefined) {
+                if (schema.default !== undefined) {
+                    let properties = schema.properties || schema.patternProperties;
+                    if (properties !== undefined) {
+                        assert.equal(
+                            Object.values(properties).some(_ => this.hasDefaultKeyword(_)),
+                            false,
+                            `对象内部定义存在require key, 不可使用defaultEmpty关键字`
+                        )
+                    }
+
+                    return true;
+                }
+                else if (schema.patternProperties !== undefined) {
                     return Object.values(schema.patternProperties).some(_ => this.hasDefaultKeyword(_));
                 }
                 else if (schema.properties !== undefined) {

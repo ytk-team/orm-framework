@@ -11,7 +11,6 @@ const ObjectFixer = (schema, value, strict) => {
     if (value === undefined) {
         let hasDefaultKeyword = Fixer.hasDefaultKeyword(schema);
         if (schema.default !== undefined) {
-            if (hasDefaultKeyword) throw new Error(`对象内部定义存在require key, 不可使用defaultEmpty关键字`);
             return schema.default; //即{}
         }
 

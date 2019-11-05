@@ -626,7 +626,9 @@ describe('#basic', function () {
                 fix.autoFixBoolean === false &&
                 fix.autoFixString === "default" &&
                 fix.autoFixNull === null &&
-                fix.autoFixEmpty === null
+                fix.autoFixEmpty === null &&
+                fix.autoFixArrayDefaultEmpty.length === 0 &&
+                    Object.keys(fix.autoFixObjectDefaultEmpty).length === 0
             ),
             "auto-fix-object-find failed"
         );

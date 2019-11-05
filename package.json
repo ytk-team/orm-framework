@@ -20,6 +20,7 @@
     "mocha": "^5.2.0",
     "mysql": "^2.16.0",
     "opts": "^1.2.6",
+    "power-assert": "^1.6.1",
     "process-key-mutex": "^1.0.1",
     "redis": "^2.8.0",
     "uuid": "^3.3.2"
@@ -45,5 +46,5 @@
   "scripts": {
     "test": "mocha"
   },
-  "version": "3.2.6"
+  "version": "3.2.7"
 }

@@ -1,6 +1,6 @@
 const {integer, boolean, string, object, array, number, empty, NULL} = require('../../../../').Type;
 
-module.exports = {
+module.exports = object({
     id: string().length(16),
     friends: array().item({
         fid: string().default("fid"),
@@ -21,5 +21,24 @@ module.exports = {
     autoFixString: string().default("default"),
     autoFixNull: NULL().default(null),
     autoFixEmpty: empty().default(null),
-    
-};
+    autoFixHalfRequireObject: {
+        oldExistValue: string(),
+        autoFixObject: {
+            count: integer().default(10)
+        },
+    }
+})
+    .require(
+        'id',
+        'friends',
+        'autoFixObject',
+        'autoFixObjectDefaultEmpty',
+        'autoFixArray',
+        'autoFixArrayDefaultEmpty',
+        'autoFixInteger',
+        'autoFixNumber',
+        'autoFixBoolean',
+        'autoFixString',
+        'autoFixNull',
+        'autoFixEmpty',
+    );

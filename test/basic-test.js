@@ -541,9 +541,11 @@ describe('#basic', function () {
     it('[auto-fix-object-get]', async function () {
         await ObjectAutoFixBefore.set({
             id: "0000000000000000",
+            autoFixHalfRequireObject: {
+                oldExistValue: "oldExistValue"
+            }
         });
         let fix = await ObjectAutoFix.get("0000000000000000");
-
         assert(
             fix.autoFixObject != undefined &&
             fix.autoFixObject.count === 10 &&
@@ -564,7 +566,11 @@ describe('#basic', function () {
             fix.autoFixNull === null &&
             fix.autoFixEmpty === null &&
             fix.autoFixArrayDefaultEmpty.length === 0 &&
-            Object.keys(fix.autoFixObjectDefaultEmpty).length === 0
+            Object.keys(fix.autoFixObjectDefaultEmpty).length === 0 &&
+            fix.autoFixHalfRequireObject !== undefined &&
+            fix.autoFixHalfRequireObject.oldExistValue === 'oldExistValue' &&
+            fix.autoFixHalfRequireObject.autoFixObject !== undefined &&
+            fix.autoFixHalfRequireObject.autoFixObject.count === 10
             ,
             'auto fix object get failed'
         );

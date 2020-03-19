@@ -19,5 +19,8 @@ module.exports = object({
     autoFixBoolean: boolean(),
     autoFixString: string(),
     autoFixNull: NULL(),
-    autoFixEmpty: empty()
+    autoFixEmpty: empty(),
+    autoFixHalfRequireObject: {
+        oldExistValue: string(),
+    }
 }).require('id');

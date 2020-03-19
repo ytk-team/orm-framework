@@ -30,10 +30,13 @@ const ObjectFixer = (schema, value, strict) => {
             return prev;
         }, {})
     }
-    let requiredProperties = required.reduce((prev, curr) => {
-        prev[curr] = properties[curr];
-        return prev;
-    }, {});
+
+    let requiredProperties = required
+        .concat(Object.keys(value)) //非require下，有值的字段也要进行检查
+        .reduce((prev, curr) => {
+            prev[curr] = properties[curr];
+            return prev;
+        }, {});
     return propertiesFix(requiredProperties, value, strict);
 
 }

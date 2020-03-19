@@ -763,7 +763,7 @@ declare namespace LogicWhereClass {
         /**
          * Logic对象序列化为json字符串形式
          */
-        toJson(): string
+        toJson(): object
     }
 
     class WhereAnd extends Base {

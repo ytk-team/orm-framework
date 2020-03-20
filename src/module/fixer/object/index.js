@@ -34,6 +34,7 @@ const ObjectFixer = (schema, value, strict) => {
     let requiredProperties = required
         .concat(Object.keys(value)) //非require下，有值的字段也要进行检查
         .reduce((prev, curr) => {
+            if (properties[curr] === undefined) return prev;
             prev[curr] = properties[curr];
             return prev;
         }, {});
@@ -102,7 +103,7 @@ function getFinallySchema(schema, value) {
     else {
         return {
             required: schema.requiredAll === true ? Object.keys(schema.properties) : (schema.required === undefined ? [] : schema.required),
-            properties: schema.properties,
+            properties: schema.properties || {},
             additionalProperties: schema.additionalProperties
         }
     }

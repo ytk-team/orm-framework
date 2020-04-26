@@ -2,10 +2,10 @@
 # yarn lockfile v1
 
 
-"@qtk/schema-validator@0.1.0":
-  version "0.1.0"
-  resolved "https://registry.yarnpkg.com/@qtk/schema-validator/-/schema-validator-0.1.0.tgz#d07c981328db31f58e170f8843ad8d2e725717fa"
-  integrity sha512-PM16BIjMlFAZwUyqhTDuM5AIYBBHQVB7qV/Jyc7nADW+gC2VHuZVilsOb+VfmoBHBHqK9oOevzRUcmYK/hk8Dg==
+"@qtk/schema-validator@^0.1.1":
+  version "0.1.1"
+  resolved "https://registry.yarnpkg.com/@qtk/schema-validator/-/schema-validator-0.1.1.tgz#693fbb80b6b74e5835731d6809334b2d9d06818e"
+  integrity sha512-EqPVVaRgUCDDIslI/We2ebms8Q6uPMGGhvKC8UaRhE7wtL+f1R66Nwzb1oxqnCVbGa65ENWCxEhSEDGSXr2aKQ==
   dependencies:
     "@qtk/schema" "0.0.7"
     power-assert "^1.6.1"

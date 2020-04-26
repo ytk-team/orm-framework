@@ -438,6 +438,18 @@ declare namespace ORM {
         function whereBetween(field: string, from: number, to: number): LogicWhereClass.WhereBetween
     
         /**
+         * SQL:IS NULL操作
+         * @param {string} field 字段路径
+         */
+        function whereIsNull(field: string): LogicWhereClass.WhereIsNull
+
+        /**
+         * SQL:IS NOT NULL操作
+         * @param {string} field 字段路径
+         */
+        function whereIsNotNull(field: string): LogicWhereClass.WhereIsNotNull
+
+        /**
          * SQL:SORT操作
          * @param {string} field 排序字段路径
          * @param {string} order "ASC" | "DESC"
@@ -816,6 +828,14 @@ declare namespace LogicWhereClass {
 
     class WhereBetween extends Base {
         constructor(field: string, from: number, to: number)
+    }
+
+    class WhereIsNull extends Base {
+        constructor(field: string)
+    }
+
+    class WhereIsNotNull extends Base {
+        constructor(field: string)
     }
 }
 

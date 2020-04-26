@@ -6,7 +6,8 @@ module.exports = {
             status: 1,
             text: "abcd",
             arr: ["abc", "poi"],
-            readTime: 1516538014
+            readTime: 1516538014,
+            mayBeNull: 111
         },
         {
             subject: '0000000000000001',
@@ -21,7 +22,8 @@ module.exports = {
         id: 1,
         title: "hello",
         content: "hey",
-        sendTime: 1516538014
+        sendTime: 1516538014,
+        mayBeNull: 111
     }, {
         id: 2,
         title: "bye",

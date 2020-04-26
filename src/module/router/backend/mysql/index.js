@@ -332,6 +332,20 @@ module.exports = class extends Base {
                 binds: totalBinds
             }
         }
+        else if (where instanceof Type.WhereIsNull) {
+            let columnName = this._getColumnName(where.field);
+            return {
+                query: `${columnName} IS NULL`,
+                binds: totalBinds
+            }
+        }
+        else if (where instanceof Type.WhereIsNotNull) {
+            let columnName = this._getColumnName(where.field);
+            return {
+                query: `${columnName} IS NOT NULL`,
+                binds: totalBinds
+            }
+        }
     }
 
     _parseSortToMysql(sort) {

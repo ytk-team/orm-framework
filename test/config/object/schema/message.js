@@ -4,5 +4,6 @@ module.exports = object({
     id: integer(),
     title: string(),
     content: string(),
-    sendTime: integer()
+    sendTime: integer(),
+    mayBeNull: integer().index()
 }).require('id');

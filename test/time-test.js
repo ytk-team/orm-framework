@@ -228,6 +228,19 @@ describe('#time', function () {
             result = await ObjectUser.count(ORM.Logic.whereContain('.friends[*].fid', '0000000000000002'));
         }
         console.log(`object-count-where(contain): ${(process.uptime() - time) * 1000 / times} ms`);
+
+        var time = process.uptime();
+        for (let i = 0; i < times; i++) {
+            result = await ObjectMessage.count(ORM.Logic.whereIsNull('.mayBeNull'));
+        }
+        console.log(`object-count-where(is null): ${(process.uptime() - time) * 1000 / times} ms`);
+
+        var time = process.uptime();
+        for (let i = 0; i < times; i++) {
+            result = await ObjectMessage.count(ORM.Logic.whereIsNotNull('.mayBeNull'));
+        }
+        console.log(`object-count-where(is not null): ${(process.uptime() - time) * 1000 / times} ms`);
+
     });
 
     it('[object-find-where]', async function() {
@@ -235,7 +248,9 @@ describe('#time', function () {
         await Promise.all([
             ObjectUser.set(Users[0]), 
             ObjectUser.set(Users[1]), 
-            ObjectUser.set(Users[2])
+            ObjectUser.set(Users[2]),
+            ObjectMessage.set(Messages[0]),
+            ObjectMessage.set(Messages[1]),
         ]);
         
         var time = process.uptime();
@@ -303,6 +318,18 @@ describe('#time', function () {
             result = await ObjectUser.find({where: ORM.Logic.whereContain('.friends[*].fid', '0000000000000002')});
         }
         console.log(`object-find-where(contain): ${(process.uptime() - time) * 1000 / times} ms`);
+    
+        var time = process.uptime();
+        for (let i = 0; i < times; i++) {
+            result = await ObjectMessage.find({where: ORM.Logic.whereIsNull('.mayBeNull')});
+        }
+        console.log(`object-find-where(is null): ${(process.uptime() - time) * 1000 / times} ms`);
+
+        var time = process.uptime();
+        for (let i = 0; i < times; i++) {
+            result = await ObjectMessage.find({where: ORM.Logic.whereIsNotNull('.mayBeNull')});
+        }
+        console.log(`object-find-where(is not null): ${(process.uptime() - time) * 1000 / times} ms`);
     });
 
     it('[object-find-sort]', async function() {

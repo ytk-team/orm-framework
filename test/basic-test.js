@@ -123,7 +123,9 @@ describe('#basic', function () {
         await Promise.all([
             ObjectUser.set(Users[0]),
             ObjectUser.set(Users[1]),
-            ObjectUser.set(Users[2])
+            ObjectUser.set(Users[2]),
+            ObjectMessage.set(Messages[0]),
+            ObjectMessage.set(Messages[1]),
         ]);
         assert((await ObjectUser.count()) === 3, `object count failed`);
         let result = await ObjectUser.count(ORM.Logic.whereEq('.id', Users[0].id));
@@ -182,13 +184,25 @@ describe('#basic', function () {
         assert(result === 1, `object count where [.friends[*].fid] failed`);
         result = await ObjectUser.count(ORM.Logic.whereContain('.friends[*].fid', '0000000000000002').toJson());
         assert(result === 1, `[toJson]object count where [.friends[*].fid] failed`);
+
+        result = await ObjectMessage.count(ORM.Logic.whereIsNull('.mayBeNull'));
+        assert(result === 1, `object count where integer in [mayBeNull where operator is null] failed`);
+        result = await ObjectMessage.count(ORM.Logic.whereIsNull('.mayBeNull').toJson());
+        assert(result === 1, `[toJson]object count where integer in [mayBeNull where operator is null] failed`);
+
+        result = await ObjectMessage.count(ORM.Logic.whereIsNotNull('.mayBeNull'));
+        assert(result === 1, `object count where integer in [mayBeNull where operator is not null] failed`);
+        result = await ObjectMessage.count(ORM.Logic.whereIsNotNull('.mayBeNull').toJson());
+        assert(result === 1, `[toJson]object count where integer in [mayBeNull where operator is not null] failed`);
     });
 
     it('[object-find-where]', async function () {
         await Promise.all([
             ObjectUser.set(Users[0]),
             ObjectUser.set(Users[1]),
-            ObjectUser.set(Users[2])
+            ObjectUser.set(Users[2]),
+            ObjectMessage.set(Messages[0]),
+            ObjectMessage.set(Messages[1]),
         ]);
         assert((await ObjectUser.find()).length === 3, `object find where [.find()] failed`);
         let result = await ObjectUser.find({ where: ORM.Logic.whereEq('.id', Users[0].id) });
@@ -270,6 +284,17 @@ describe('#basic', function () {
         assert(result.length === 2, `object find where boolean in [.find(isVip where operator =)] failed`);
         result = await ObjectUser.find({ where: ORM.Logic.whereIn('.isVip', true).toJson() });
         assert(result.length === 2, `[toJson]object find where boolean in [.find(isVip where operator =)] failed`);
+
+        result = await ObjectMessage.find({ where: ORM.Logic.whereIsNull('.mayBeNull') });
+        assert(result.length === 1, `object find where integer in [.find(mayBeNull where operator is null)] failed`);
+        result = await ObjectMessage.find({ where: ORM.Logic.whereIsNull('.mayBeNull').toJson() });
+        assert(result.length === 1, `[toJson]object find where integer in [.find(mayBeNull where operator is null)] failed`);
+
+        result = await ObjectMessage.find({ where: ORM.Logic.whereIsNotNull('.mayBeNull') });
+        assert(result.length === 1, `object find where integer in [.find(mayBeNull where operator is not null)] failed`);
+        result = await ObjectMessage.find({ where: ORM.Logic.whereIsNotNull('.mayBeNull').toJson() });
+        assert(result.length === 1, `[toJson]object find where integer in [.find(mayBeNull where operator is not null)] failed`);
+
     });
 
     it('[object-find-sort]', async function () {
@@ -396,6 +421,19 @@ describe('#basic', function () {
         filter = ORM.Logic.whereContain('.arr[*]', 'abc');
         assert(await RelationUserMessage.count(Users[0].id, filter) === 1, 'relation count filter contain abcd failed');
         assert(await RelationUserMessage.count(Users[0].id, filter.toJson()) === 1, '[toJson]relation count filter contain abcd failed');
+    
+        filter = ORM.Logic.whereIsNull('.mayBeNull');
+        result = await RelationUserMessage.count(Users[0].id, filter);
+        assert(result === 1, 'relation list filter mayBeNull is null failed');
+        result = await RelationUserMessage.count(Users[0].id, filter.toJson());
+        assert(result === 1, '[toJson]relation list filter mayBeNull is null failed');
+
+        filter = ORM.Logic.whereIsNull('.mayBeNull');
+        result = await RelationUserMessage.count(Users[0].id, filter);
+        assert(result === 1, 'relation count filter mayBeNull is not null failed');
+        result = await RelationUserMessage.count(Users[0].id, filter.toJson());
+        assert(result === 1, '[toJson]relation count filter mayBeNull is not null failed');
+
     });
 
     it('[relation-list]', async function () {
@@ -439,6 +477,19 @@ describe('#basic', function () {
         assert(result[0].id === UserMessages[1].id, 'relation list filter = failed');
         result = await RelationUserMessage.list(Users[0].id, undefined, undefined, filter.toJson());
         assert(result[0].id === UserMessages[1].id, '[toJson]relation list filter = failed');
+
+        filter = ORM.Logic.whereIsNull('.mayBeNull');
+        result = await RelationUserMessage.list(Users[0].id, undefined, undefined, filter);
+        assert(result[0].id === UserMessages[1].id, 'relation list filter mayBeNull is null failed');
+        result = await RelationUserMessage.list(Users[0].id, undefined, undefined, filter.toJson());
+        assert(result[0].id === UserMessages[1].id, '[toJson]relation list filter mayBeNull is null failed');
+
+        filter = ORM.Logic.whereIsNull('.mayBeNull');
+        result = await RelationUserMessage.list(Users[0].id, undefined, undefined, filter);
+        assert(result[0].id === UserMessages[0].id, 'relation list filter mayBeNull is not null failed');
+        result = await RelationUserMessage.list(Users[0].id, undefined, undefined, filter.toJson());
+        assert(result[0].id === UserMessages[0].id, '[toJson]relation list filter mayBeNull is not null failed');
+
 
         filter = ORM.Logic.whereIn('.status', 1, 2);
         result = await RelationUserMessage.list(Users[0].id, undefined, undefined, filter);

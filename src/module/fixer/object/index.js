@@ -4,7 +4,7 @@ let NullFixer = undefined;
 let NumberFixer = undefined;
 let StringFixer = undefined;
 let ArrayFixer = undefined;
-let ObjectValidator = undefined;
+const Validator = require('@qtk/schema-validator');
 const Fixer = require('../');
 
 const ObjectFixer = (schema, value, strict) => {
@@ -117,11 +117,13 @@ function selectBranch(schema, value) {
             additionalProperties: schema.additionalProperties
         }
     }
-    try {
-        ObjectValidator(
-            Object.assign({}, schema.if, {additionalProperties: true}), 
-            value
-        );
+    
+    let pass = Validator.fromJSONSchema(
+        Object.assign({}, schema.if, {type: 'object', additionalProperties: true})
+    )
+        .validate(value);
+
+    if (pass) {
         if (schema.then === undefined) throw new Error(`if must had then`);
         return {
             required: schema.then.required,
@@ -129,7 +131,7 @@ function selectBranch(schema, value) {
             additionalProperties: schema.then.additionalProperties
         }
     }
-    catch(error) {
+    else {
         return selectBranch(schema.else, value);
     }
 }

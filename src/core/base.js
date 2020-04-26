@@ -82,8 +82,8 @@ module.exports = class {
             where instanceof Type.WhereLe ||
             where instanceof Type.WhereLt ||
             where instanceof Type.WhereContain ||
-            where instanceof Type.WhereIsNull ||
-            where instanceof Type.WhereIsNotNull
+            where instanceof Type.WhereIsUndef ||
+            where instanceof Type.WhereIsDef
         ) {
             return [where.field];
         }

@@ -441,13 +441,13 @@ declare namespace ORM {
          * SQL:IS NULL操作
          * @param {string} field 字段路径
          */
-        function whereIsNull(field: string): LogicWhereClass.WhereIsNull
+        function whereIsUndef(field: string): LogicWhereClass.WhereIsUndef
 
         /**
          * SQL:IS NOT NULL操作
          * @param {string} field 字段路径
          */
-        function whereIsNotNull(field: string): LogicWhereClass.WhereIsNotNull
+        function whereIsDef(field: string): LogicWhereClass.WhereIsDef
 
         /**
          * SQL:SORT操作
@@ -830,11 +830,11 @@ declare namespace LogicWhereClass {
         constructor(field: string, from: number, to: number)
     }
 
-    class WhereIsNull extends Base {
+    class WhereIsUndef extends Base {
         constructor(field: string)
     }
 
-    class WhereIsNotNull extends Base {
+    class WhereIsDef extends Base {
         constructor(field: string)
     }
 }

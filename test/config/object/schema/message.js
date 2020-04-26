@@ -5,5 +5,5 @@ module.exports = object({
     title: string(),
     content: string(),
     sendTime: integer(),
-    mayBeNull: integer().index()
+    maybeUndef: integer().index()
 }).require('id');

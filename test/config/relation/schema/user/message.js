@@ -8,7 +8,7 @@ module.exports = object({
     arr: array(string().index()),
     readTime: integer().default(0),
     deletedTime: integer().default(0),
-    mayBeNull: integer().index()
+    maybeUndef: integer().index()
 })
     .if.properties({status: 1})
     .then.require('subject', 'object', 'status', 'text', 'arr', 'readTime').additionalProperties(false)

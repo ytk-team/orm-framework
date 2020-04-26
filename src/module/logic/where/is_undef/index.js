@@ -1,6 +1,6 @@
 const Base = require('../../base');
 
-module.exports = class WhereIsNotNull extends Base {
+module.exports = class WhereIsDef extends Base {
     constructor(field) {
         super();
         this._field = field;

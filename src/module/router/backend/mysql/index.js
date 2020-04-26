@@ -332,14 +332,14 @@ module.exports = class extends Base {
                 binds: totalBinds
             }
         }
-        else if (where instanceof Type.WhereIsNull) {
+        else if (where instanceof Type.WhereIsUndef) {
             let columnName = this._getColumnName(where.field);
             return {
                 query: `${columnName} IS NULL`,
                 binds: totalBinds
             }
         }
-        else if (where instanceof Type.WhereIsNotNull) {
+        else if (where instanceof Type.WhereIsDef) {
             let columnName = this._getColumnName(where.field);
             return {
                 query: `${columnName} IS NOT NULL`,

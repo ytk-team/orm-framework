@@ -154,7 +154,7 @@ const user = {
     extraObject: {
         count: 1
     },
-    mayBeNull: 1
+    maybeUndef: 1
 }
 const user2 = {
     id: '0000000000000002',
@@ -185,7 +185,7 @@ const userMessage = {
     object: 1,
     status: 1,
     readTime: 1516538014,
-    mayBeNull: 1
+    maybeUndef: 1
 }
 const friend1 = {fid: uuid().replace(/-/g, ""), time: parseInt(Math.random() * 100)};
 const friend2 = {fid: uuid().replace(/-/g, ""), time: parseInt(Math.random() * 100)};
@@ -219,8 +219,8 @@ console.log(await ObjectUser.find({where: ORM.Logic.whereOr(
 console.log(await ObjectUser.find({where: ORM.Logic.whereLike('.name', `%${user.name.substr(1, 3)}%`)}));
 console.log(await ObjectUser.find({where: ORM.Logic.whereBetween('.money', 1, 111)}));  
 console.log(await ObjectUser.find({where: ORM.Logic.whereContain('.friends[*].fid', '0000000000000003')})); 
-console.log(await ObjectUser.find({where: ORM.Logic.whereIsNull('.mayBeNull')}));
-console.log(await ObjectUser.find({where: ORM.Logic.whereIsNotNull('.mayBeNull')}));
+console.log(await ObjectUser.find({where: ORM.Logic.whereIsUndef('.maybeUndef')}));
+console.log(await ObjectUser.find({where: ORM.Logic.whereIsDef('.maybeUndef')}));
 console.log(await ObjectUser.find({sort: ORM.Logic.sort('.id', "desc")}));
 console.log(await ObjectUser.find({limit: ORM.Logic.limit(1), sort: ORM.Logic.sort('.id')}));
 console.log(await ObjectUser.find({limit: ORM.Logic.limit(1, 1), sort: ORM.Logic.sort('.id', 'DESC')}));
@@ -242,8 +242,8 @@ console.log(await ObjectUser.count(ORM.Logic.whereOr(
 console.log(await ObjectUser.count(ORM.Logic.whereLike('.name', `%${user.name.substr(1, 3)}%`)));
 console.log(await ObjectUser.count(ORM.Logic.whereBetween('.money', 1, 111)}));  
 console.log(await ObjectUser.count(ORM.Logic.whereContain('.friends[*].fid', '0000000000000003'))); 
-console.log(await ObjectUser.count(ORM.Logic.whereIsNull('.mayBeNull')));
-console.log(await ObjectUser.count(ORM.Logic.whereIsNotNull('.mayBeNull')));
+console.log(await ObjectUser.count(ORM.Logic.whereIsUndef('.maybeUndef')));
+console.log(await ObjectUser.count(ORM.Logic.whereIsDef('.maybeUndef')));
 console.log(await ObjectUser.count(RM.Logic.sort('.id', "desc")));
 console.log(await ObjectUser.count(ORM.Logic.limit(1), sort: ORM.Logic.sort('.id')));
 console.log(await ObjectUser.count(ORM.Logic.limit(1, 1), sort: ORM.Logic.sort('.id', 'DESC')));
@@ -256,8 +256,8 @@ console.log(await RelationUserMessage.has(user.id, message.id));
 console.log(await RelationUserMessage.fetch(user.id, message.id));
 console.log(await RelationUserMessage.count(user.id));
 console.log(await RelationUserMessage.count(Users[0].id, ORM.Logic.whereEq('.status', 2)));
-console.log(await RelationUserMessage.count(Users[0].id, ORM.Logic.whereIsNull('.mayBeNull')));
-console.log(await RelationUserMessage.count(Users[0].id, ORM.Logic.whereIsNotNull('.mayBeNull')));
+console.log(await RelationUserMessage.count(Users[0].id, ORM.Logic.whereIsUndef('.maybeUndef')));
+console.log(await RelationUserMessage.count(Users[0].id, ORM.Logic.whereIsDef('.maybeUndef')));
 console.log(await RelationUserMessage.list(user.id, ORM.Logic.sort('.status', 'DESC'), ORM.Logic.limit(1, 1)));
 console.log(await RelationUserMessage.list(user.id, [ORM.Logic.sort('.status', 'DESC'), ORM.Logic.sort('.readTime', 'DESC')], ORM.Logic.limit(1, 1)));
 console.log(await RelationUserMessage.list(user.id, [ORM.Logic.sort('.status', 'DESC'), ORM.Logic.sort('.readTime', 'DESC')], ORM.Logic.limit(1, 1)), ORM.Logic.whereEq('.status', 2));
@@ -562,8 +562,8 @@ get support() {
 |WhereGe|field, value|'.a', 1|
 |WhereLt|field, value|'.a', 1|
 |WhereLe|field, value|'.a', 1|
-|WhereIsNull|field|'.a'|
-|WhereIsNotNull|fieldlue|'.a'|
+|WhereIsUndef|field|'.a'|
+|WhereIsDef|fieldlue|'.a'|
 |WhereContain|field, value|'.arr[*]', 1|
 |Sort|field, order|'.a', 'DESC'|
 |Limit|limit, skip|1,1|
@@ -582,7 +582,7 @@ get support() {
     - bug修复
     - 增加orm_rebuild_column_index重建表列/索引命令
 - 2020-04-26:
-    - Logic增加`WhereIsNull`,`WhereIsNotNull`
+    - Logic增加`WhereIsUndef`,`WhereIsDef`
     
 ## 致谢
 schema语法引用的是[semantic-schema](https://www.npmjs.com/package/semantic-schema)项目代码，感谢Magnus同学的支持

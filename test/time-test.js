@@ -231,13 +231,13 @@ describe('#time', function () {
 
         var time = process.uptime();
         for (let i = 0; i < times; i++) {
-            result = await ObjectMessage.count(ORM.Logic.whereIsNull('.mayBeNull'));
+            result = await ObjectMessage.count(ORM.Logic.whereIsUndef('.maybeUndef'));
         }
         console.log(`object-count-where(is null): ${(process.uptime() - time) * 1000 / times} ms`);
 
         var time = process.uptime();
         for (let i = 0; i < times; i++) {
-            result = await ObjectMessage.count(ORM.Logic.whereIsNotNull('.mayBeNull'));
+            result = await ObjectMessage.count(ORM.Logic.whereIsDef('.maybeUndef'));
         }
         console.log(`object-count-where(is not null): ${(process.uptime() - time) * 1000 / times} ms`);
 
@@ -321,13 +321,13 @@ describe('#time', function () {
     
         var time = process.uptime();
         for (let i = 0; i < times; i++) {
-            result = await ObjectMessage.find({where: ORM.Logic.whereIsNull('.mayBeNull')});
+            result = await ObjectMessage.find({where: ORM.Logic.whereIsUndef('.maybeUndef')});
         }
         console.log(`object-find-where(is null): ${(process.uptime() - time) * 1000 / times} ms`);
 
         var time = process.uptime();
         for (let i = 0; i < times; i++) {
-            result = await ObjectMessage.find({where: ORM.Logic.whereIsNotNull('.mayBeNull')});
+            result = await ObjectMessage.find({where: ORM.Logic.whereIsDef('.maybeUndef')});
         }
         console.log(`object-find-where(is not null): ${(process.uptime() - time) * 1000 / times} ms`);
     });

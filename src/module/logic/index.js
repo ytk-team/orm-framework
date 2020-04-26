@@ -13,8 +13,8 @@ const Type = {
     WhereLt: require('./where/lt'),
     WhereLe: require('./where/le'),
     WhereContain: require('./where/contain'),
-    WhereIsNull: require('./where/is_null'),
-    WhereIsNotNull: require('./where/is_not_null'),
+    WhereIsUndef: require('./where/is_def'),
+    WhereIsDef: require('./where/is_undef'),
     Sort: require('./sort'),
     Limit: require('./limit'),
 }
@@ -76,12 +76,12 @@ module.exports = class {
         return new Type.WhereBetween(field, from, to);
     }
 
-    static whereIsNull(field) {
-        return new Type.WhereIsNull(field);
+    static whereIsUndef(field) {
+        return new Type.WhereIsUndef(field);
     }
 
-    static whereIsNotNull(field) {
-        return new Type.WhereIsNotNull(field);
+    static whereIsDef(field) {
+        return new Type.WhereIsDef(field);
     }
 
     static sort(field, order = "ASC") {
@@ -121,8 +121,8 @@ module.exports = class {
             case 'WhereLt':
             case 'WhereContain':            
                 return new Type[logic.type](logic.fields._field ,logic.fields._value); 
-            case 'WhereIsNull':
-            case 'WhereIsNotNull':               
+            case 'WhereIsUndef':
+            case 'WhereIsDef':               
                 return new Type[logic.type](logic.fields._field);                 
             case 'WhereNot':
                 return new Type[logic.type](this.normalize(logic.fields._item));

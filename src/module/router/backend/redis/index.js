@@ -235,10 +235,10 @@ module.exports = class extends Base {
         else if (where instanceof Type.WhereContain) {
             return this._getNodeValue(item, where.field).includes(where.value);
         }
-        else if (where instanceof Type.WhereIsNull) {
+        else if (where instanceof Type.WhereIsUndef) {
             return eval(`${this._getNodeValue(item, where.field)} === undefined`);
         }
-        else if (where instanceof Type.WhereIsNotNull) {
+        else if (where instanceof Type.WhereIsDef) {
             return eval(`${this._getNodeValue(item, where.field)} !== undefined`);
         }
     }

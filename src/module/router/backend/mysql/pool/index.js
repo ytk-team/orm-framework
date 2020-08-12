@@ -6,9 +6,9 @@ module.exports = class {
         const key = `${connParam.user}@${connParam.host}:${connParam.port}/${connParam.database}`;
         if (!cache.has(key)) {
             cache.set(key, mysql.createPool({
-                host	: connParam.host,
-                port	: connParam.port,
-                user	: connParam.user,
+                host: connParam.host,
+                port: connParam.port,
+                user: connParam.user,
                 password: connParam.password,
                 database: connParam.database,
                 charset: 'utf8mb4'
@@ -17,7 +17,7 @@ module.exports = class {
 
         const pool = cache.get(key);
         return new Promise((resolve, reject) => {
-            pool.getConnection(function(err, connection) {
+            pool.getConnection(function (err, connection) {
                 if (err !== null) {
                     reject(err);
                     return;
@@ -25,12 +25,12 @@ module.exports = class {
                 connection.config.queryFormat = function (query, values) {
                     if (!values) return query;
                     return query.replace(/\:(\w+)/g, function (txt, key) {
-                      if (values.hasOwnProperty(key)) {
-                        return this.escape(values[key]);
-                      }
-                      return txt;
+                        if (values.hasOwnProperty(key)) {
+                            return this.escape(values[key]);
+                        }
+                        return txt;
                     }.bind(this));
-                  };
+                };
                 resolve(connection);
             });
         });

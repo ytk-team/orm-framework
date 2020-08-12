@@ -112,6 +112,8 @@ const {whereEq, whereNq, whereGt, whereGe, whereLt, whereLe, whereContain, where
 |whereAnd|与|(...items)|whereAnd(whereEq('.a', 1), whereLt('.b', 1))|
 |whereOr|或|(...items)|whereOr(whereEq('.a', 1), whereLt('.b', 1))|
 |whereNot|非|item|whereNot(whereEq('.a', 1))|
+|WhereIsUndef|是否为非NULL **(判断是否为非空数组也可以使用这个方法)**|(field)|WhereIsUndef('.a')|
+|WhereIsDef|是否为NULL **(判断是否为空数组也可以使用这个方法)**|(field)|WhereIsDef('.a')|
 |sort|排序|(field, order = "ASC")|sort('.a', 'DESC')|
 |limit|分页|(limit, skip = 0)|limit(1,1)|
 
@@ -563,7 +565,7 @@ get support() {
 |WhereLt|field, value|'.a', 1|
 |WhereLe|field, value|'.a', 1|
 |WhereIsUndef|field|'.a'|
-|WhereIsDef|fieldlue|'.a'|
+|WhereIsDef|field|'.a'|
 |WhereContain|field, value|'.arr[*]', 1|
 |Sort|field, order|'.a', 'DESC'|
 |Limit|limit, skip|1,1|

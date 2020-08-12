@@ -362,6 +362,10 @@ module.exports = class extends Base {
             return `\`${fieldName === ".id" ? "_id" : fieldName}\``;
         }
         else {
+            fieldName = fieldName
+                .split('.')
+                .map(_ => /^[0-9]{1,}/.test(_) ? `\\"${_}\\"` : _) //当存在以数字开头的key时要做下转义
+                .join('.');
             return `doc->>"$${fieldName}"`;
         }
     }

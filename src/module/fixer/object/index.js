@@ -18,7 +18,7 @@ const ObjectFixer = (schema, value, strict) => {
             value = {};
         }
         else {
-            return undefined;
+            throw new Error(`require filed: ${JSON.stringify(schema)}, but not give it a default value`);
         }
     }
 
@@ -83,6 +83,17 @@ function propertiesFix(requiredProperties, value, strict) {
                 default:
                     throw new Error(`no support type ${requiredProperties[standardKey].type}`);
             }
+
+            if (fixResult === undefined) {
+                throw new Error(`对象${JSON.stringify(value)}在填充默认值时，
+                    字段【${standardKey}】要求必填，但并没有给该字段设置默认值。
+                    造成原因可能有:
+                    1.字段【${standardKey}】为必填，却没有设置默认值
+                    2.若是if情况的话,可能判断条件有缺陷，进入了错误的分支，实际值里字段【${standardKey}】值为undefined,但却要字段必填
+                    (判断条件最好写成【properties(...).require(properties里的字段)】, 很大可能是判断条件里properties后少了require字段，导致满足条件误入分支)`
+                );
+            }
+
             value[standardKey] = fixResult;
         }
     }

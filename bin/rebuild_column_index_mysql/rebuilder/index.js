@@ -119,7 +119,7 @@ module.exports = class {
 
         //全文搜索索引要手动刷新
         if (indexes.some(({ indexType }) => indexType === "FULL_TEXT")) {
-            await this._query(shard, `OPTIMIZE TABLE　${shard.database}.${shard.table}`);
+            await this._query(shard, `OPTIMIZE TABLE ${shard.database}.${shard.table}`);
         }
     }
 

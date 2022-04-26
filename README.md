@@ -76,6 +76,7 @@ const RelationUserMessage = new ORM.Relation('user.message');
 |arrayNodePop|(id, path)|object|弹出某条记录下的数组节点尾部一个元素|
 |arrayNodeShift|(id, path)|object|弹出某条记录下的数组节点头部一个元素|
 |find|({where?, sort?, limit?})|array|查找所有符合规则的object,支持排序、分页|
+|fieldFind|({field?,where?, sort?, limit?,group})|array|查找所有符合规则的object,支持排序、分页、分组、取单个字段|
 |count|(where)|integer|统计所有符合规则的object数量|
 
 #### Relation
@@ -94,7 +95,7 @@ const RelationUserMessage = new ORM.Relation('user.message');
 #### Logic
 提供一套标准的查询、排序、分页语法，在Object``find``、``count``,Relation``list``、``count``中可以使用
 ```js
-const {whereEq, whereNq, whereGt, whereGe, whereLt, whereLe, whereContain, whereIn, whereBetween, whereLike, whereAnd, whereOr, whereNot, sort, limit} = require('@qtk/orm-framework').Logic;
+const {whereEq, whereNq, whereGt, whereGe, whereLt, whereLe, whereContain, whereIn, whereBetween, whereLike, whereAnd, whereOr, whereNot, sort, limit, field , group } = require('@qtk/orm-framework').Logic;
 ```
 
 |方法|作用|参数|示例(按照属性栏的顺序)|
@@ -116,6 +117,8 @@ const {whereEq, whereNq, whereGt, whereGe, whereLt, whereLe, whereContain, where
 |WhereIsDef|是否为NULL **(判断是否为空数组也可以使用这个方法)**|(field)|WhereIsDef('.a')|
 |sort|排序|(field, order = "ASC")|sort('.a', 'DESC')|
 |limit|分页|(limit, skip = 0)|limit(1,1)|
+|field|select 单个字段 |(field, alias)|field('.name','nameS'),field('count(1)','count')|
+|group|分组|(field)|group('.name')|
 
 ##### JSON化
 Logic对象是一个类对象，不支持通过网络传输。故Logic对象提供``toJson``方法，允许将Logic对象转换为JSON对象．**同时在原本使用Logic对象的地方支持使用JSON化后对象进行操作**
@@ -438,6 +441,7 @@ module.exports = {
 |Object|arrayNodePop|首先Object.has检查，其顺带数据迁移，之后只写当前|
 |Object|arrayNodeShift|首先Object.has检查，其顺带数据迁移，之后只写当前|
 |Object|find|优先查当前，若无则查废弃，有结果则返回但**不做同步**|
+|Object|fieldFind|优先查当前，若无则查废弃，有结果则返回但**不做同步**|
 |Object|count|同Object.find|
 |Relation|fetch|同Object.get|
 |Relation|put|同Object.set|
@@ -519,6 +523,7 @@ static get media() { //set media name
 |objectArrayNodeShift|(id, path)|object|undefined|否|弹出某条记录下的数组节点头部一个元素|
 |objectArrayNodeShift|(id, path)|object|undefined|否|弹出某条记录下的数组节点头部一个元素|
 |objectFind|({where, sort, limit})|array|[]|否|查找所有符合规则的对象,支持排序、分页|
+|objectFieldFind|({field, where, sort, limit, group})|array|[]|否|查找所有符合规则的对象,支持排序、分页、分组、查询单个字段|
 |objectCount|(where)|integer|0|否|统计所有符合规则的对象数量|
 |relationFetch|(subject, object)|object|undefined|是|返回关系中某个对象|
 |relationPut|(relation)|无|无|是|将某个对象放入关系中|
@@ -569,7 +574,8 @@ get support() {
 |WhereContain|field, value|'.arr[*]', 1|
 |Sort|field, order|'.a', 'DESC'|
 |Limit|limit, skip|1,1|
-
+|Field|field, alias|'.name','nameS'|
+|Group|field|'.name'|
 
 ### Redis媒介插件代码
 请移步[这里](./doc/DEMO_PLUGIN.md)[github才能支持]

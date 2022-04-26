@@ -369,4 +369,63 @@ module.exports = class extends Base {
             return `doc->>"$${fieldName}"`;
         }
     }
+    
+    async objectFieldFind({field=undefined,where = undefined, sort = undefined, limit = undefined,group=undefined}){
+        let sql = '';
+        let whereSql = '';
+        let sortSql = '';
+        let fieldSql = 'doc';
+        let groupSql='';
+        if(field !=undefined){
+            fieldSql = ` ${[].concat(field).map(_ => this._parseFieldToMysql(_)).join(',')}`;
+        }
+        if (where != undefined) {
+            var {query, binds} = this._parseWhereToMysql(where);
+            whereSql = `WHERE ${query}`;
+        }
+        if(group != undefined){
+            groupSql = `GROUP BY ${[].concat(group).map(_ => this._parseGroupToMysql(_)).join(',')}`;
+        }
+        if (sort != undefined) {
+            sortSql = `ORDER BY ${[].concat(sort).map(_ => this._parseSortToMysql(_)).join(',')}`;
+        }
+        if (limit != undefined) {
+            sql = Mysql.format(`SELECT ${fieldSql} FROM ?? ${whereSql} ${groupSql} ${sortSql} ${this._parseLimitToMysql(limit)}`, [this._connParam.table]);
+        }
+        else {
+            sql = Mysql.format(`SELECT ${fieldSql} FROM ?? ${whereSql} ${groupSql} ${sortSql}`, [this._connParam.table]);
+        }
+        return (await this._execute(sql, binds)).map(_ => {
+            if(_.doc !==undefined){
+                _.doc = JSON.parse(_.doc);
+            }
+            return _;
+        });
+
+    }
+
+    _parseGroupToMysql(group){
+        let columnName = this._getColumnName(group.field);
+        return `${columnName} `;
+    }
+    _parseFieldToMysql(field){
+        let columnName = this._getColumnNameByField(field.field);
+        return `${columnName} AS ${field.alias}`;
+    }
+
+    _getColumnNameByField(fieldName) {
+        if (this._indexes.findIndex(_ => _ === fieldName) != -1) {
+            return `\`${fieldName === ".id" ? "_id" : fieldName}\``;
+        }
+        else if(fieldName.substring(0,1) !='.'){
+            return fieldName;
+        }
+        else {
+            fieldName = fieldName
+                .split('.')
+                .map(_ => /^[0-9]{1,}/.test(_) ? `\\"${_}\\"` : _) //当存在以数字开头的key时要做下转义
+                .join('.');
+            return `doc->>"$${fieldName}"`;
+        }
+    }
 }

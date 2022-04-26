@@ -196,6 +196,41 @@ describe('#basic', function () {
         assert(result === 1, `[toJson]object count where integer in [maybeUndef where operator is not null] failed`);
     });
 
+    it('[object-fieldFind-field]', async function () {
+        await Promise.all([
+            ObjectUser.set(Users[0]),
+            ObjectUser.set(Users[1]),
+            ObjectUser.set(Users[2]),
+            ObjectMessage.set(Messages[0]),
+            ObjectMessage.set(Messages[1]),
+        ]);
+
+        assert((await ObjectUser.fieldFind()).length === 3, `object fieldFind  [.fieldFind()] failed`);
+        let result = await ObjectUser.fieldFind({ field: ORM.Logic.field(".name", "nameS") })
+        assert(result.length === 3 && result[0].nameS === Users[0].name, `object fieldFind filed [.fieldFind(field operator =.name)] failed`);
+
+        result = await ObjectUser.fieldFind({ field: [ORM.Logic.field(".name", "nameS"), ORM.Logic.field(".gender", "genderS")] })
+        assert(result.length === 3 && result[0].genderS === Users[0].gender, `object fieldFind filed [.find(field operator =.gender)] failed`);
+
+        result = await ObjectUser.fieldFind({ field: ORM.Logic.field("count(1)", "count") })
+        assert(result.length === 1 && result[0].count === 3, `object fieldFind filed [.find(field operator =count(1))] failed`);
+    })
+
+    it('[object-fieldFind-field-groud]', async function () {
+        await Promise.all([
+            ObjectUser.set(Users[0]),
+            ObjectUser.set(Users[1]),
+            ObjectUser.set(Users[2]),
+            ObjectMessage.set(Messages[0]),
+            ObjectMessage.set(Messages[1]),
+        ]);
+
+        assert((await ObjectUser.fieldFind()).length === 3, `object fieldFind  [.fieldFind()] failed`);
+        let result = await ObjectUser.fieldFind({ field: [ORM.Logic.field("count(1)", "count"),ORM.Logic.field(".gender","genderS")],group:ORM.Logic.group('.gender') })
+        assert(result.length === 2 && result[0].count === 2 && result[0].genderS === 0, `object fieldFind filed [.fieldFind(field operator =.name)] failed`);
+
+    })
+
     it('[object-find-where]', async function () {
         await Promise.all([
             ObjectUser.set(Users[0]),
@@ -421,7 +456,7 @@ describe('#basic', function () {
         filter = ORM.Logic.whereContain('.arr[*]', 'abc');
         assert(await RelationUserMessage.count(Users[0].id, filter) === 1, 'relation count filter contain abcd failed');
         assert(await RelationUserMessage.count(Users[0].id, filter.toJson()) === 1, '[toJson]relation count filter contain abcd failed');
-    
+
         filter = ORM.Logic.whereIsUndef('.maybeUndef');
         result = await RelationUserMessage.count(Users[0].id, filter);
         assert(result === 1, 'relation list filter maybeUndef is null failed');
@@ -685,7 +720,7 @@ describe('#basic', function () {
                 fix.autoFixNull === null &&
                 fix.autoFixEmpty === null &&
                 fix.autoFixArrayDefaultEmpty.length === 0 &&
-                    Object.keys(fix.autoFixObjectDefaultEmpty).length === 0
+                Object.keys(fix.autoFixObjectDefaultEmpty).length === 0
             ),
             "auto-fix-object-find failed"
         );

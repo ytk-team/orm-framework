@@ -17,6 +17,8 @@ const Type = {
     WhereIsDef: require('./where/is_undef'),
     Sort: require('./sort'),
     Limit: require('./limit'),
+    Group: require('./group'),
+    Field: require('./field'),
 }
 
 module.exports = class {
@@ -92,6 +94,14 @@ module.exports = class {
         return new Type.Limit(limit, skip);
     }
 
+    static field(field, alias) {
+        return new Type.Field(field, alias);
+    }
+
+    static group(field) {
+        return new Type.Group(field);
+    }
+
 
     static normalize(logic) {
         if (Array.isArray(logic)) {
@@ -131,7 +141,11 @@ module.exports = class {
             case 'Sort':
                 return new Type[logic.type](logic.fields._field, logic.fields._order);  
             case 'Limit':
-                return new Type[logic.type](logic.fields._limit, logic.fields._skip);  
+                return new Type[logic.type](logic.fields._limit, logic.fields._skip);
+            case 'Filed':
+                return new Type[logic.type](logic.fields._field, logic.fields._alias);
+            case 'Group':
+                return new Type[logic.type](logic.fields._field);  
             default:
                 throw new Error(`不支持${logic.type}反序列化`);
         }

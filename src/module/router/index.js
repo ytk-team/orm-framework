@@ -151,6 +151,14 @@ module.exports = class Wrapper {
         await Promise.all(pendings);
     }
 
+    async objectFieldFind({field,where, sort, limit,group}) {
+        let value = await this._routerCurrent.objectFieldFind({field,where, sort, limit,group});
+        if ((value.length === 0) && (this._routerDeprecated !== undefined)) {
+            value = await this._routerDeprecated.objectFieldFind({field,where, sort, limit,group});
+        }
+        return value;
+    }
+
 }
 
 class Router {
@@ -417,5 +425,35 @@ class Router {
         if (cache !== undefined) pendings.push(cache.relationClear(subject));
         if (persistence !== undefined) pendings.push(persistence.relationClear(subject));
         await Promise.all(pendings);
+    }
+
+    async objectFieldFind({field, where, sort, limit ,group}) {
+        const {indexes} = require('../../global');
+        let rows = [];
+        if (this._cache !== undefined && this._persistence === undefined) {
+            assert((this._cache.shards.length <= 1) || (sort === undefined && limit === undefined), `can not use sort or limit when shards more than one`);
+            let hadFind = false;
+            for (let shard of this._cache.shards) {
+                let backend = Backend.create(shard, indexes[this._moduleName]);
+                if (backend.support.objectFieldFind === false) break;
+                Array.prototype.push.apply(rows, await backend.objectFieldFind({field, where, sort, limit ,group}));
+                hadFind = true;
+            }
+            if (hadFind) return rows;
+        }
+
+        if (this._persistence !== undefined) {
+            assert((this._persistence.shards.length <= 1) || (sort === undefined && limit === undefined), `can not use sort or limit when shards more than one`);
+            let hadFind = false;
+            for (let shard of this._persistence.shards) {
+                let backend = Backend.create(shard, indexes[this._moduleName]);
+                if (backend.support.objectFieldFind === false) break;
+                Array.prototype.push.apply(rows, await backend.objectFieldFind({field, where, sort, limit ,group}));
+                hadFind = true;
+            }
+            if (hadFind) return rows;
+        }
+
+        throw new Error('can not use find by any of media');
     }
 }

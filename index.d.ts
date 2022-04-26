@@ -84,6 +84,11 @@ declare namespace ORM {
          * 对象查找排序分页操作
          */
         find({where, sort, limit}: ObjectFindParams): Promise<any[]>
+
+        /**
+         * 对象查找排序分页分组查询单个字段操作
+         */
+        fieldFind({field, where, sort, limit, group}: ObjectFieldFindParams): Promise<any[]>
     
         /**
          * 统计对象数量，支持条件查询
@@ -265,6 +270,16 @@ declare namespace ORM {
          * @param {LogicLimitClass.Base} limit 分页参数
          */
         objectFind(where: LogicWhereClass.Base, sort: (LogicSortClass.Base | LogicSortClass.Base[]) , limit: LogicLimitClass.Base): Promise<any[]>
+
+        /**
+         * 对象查找排序分页分组查询单个字段操作
+         * @param {LogicFieldClass.Base | LogicFieldClass.Base[]} field 查询参数
+         * @param {LogicWhereClass.Base} where 查询参数
+         * @param {LogicSortClass.Base | LogicSortClass.Base[]} sort 排序参数
+         * @param {LogicLimitClass.Base} limit 分页参数
+         * @param {LogicGroupClass.Base | LogicGroupClass.Base[]} group 排序参数
+         */
+         objectFieldFind(field:LogicFieldClass.Base ,where: LogicWhereClass.Base, sort: (LogicSortClass.Base | LogicSortClass.Base[]) , limit: LogicLimitClass.Base , group: LogicGroupClass.Base): Promise<any[]>
     
         /**
          * 统计对象数量，支持条件查询
@@ -462,6 +477,19 @@ declare namespace ORM {
          * @param {number} skip 偏移量
          */
         function limit(limit: number, skip?: number): LogicLimitClass.Limit
+
+         /**
+         * SQL:SELECT操作
+         * @param {string} field 查询字段路径
+         * @param {string} alias 查询字段路径别名
+         */
+        function field(field: string, alias:string): LogicFieldClass.Field
+
+        /**
+         * SQL:GROUP操作
+         * @param {string} field 查询字段路径
+         */
+        function group(field: string): LogicGroupClass.Group
 
         /**
          * json形式的Logic反序列化为对象
@@ -865,6 +893,32 @@ declare namespace LogicLimitClass {
     }
 }
 
+declare namespace LogicGroupClass {
+    class Base {
+        /**
+         * Logic对象序列化为json字符串形式
+         */
+        toJson(): string
+    }
+
+    class Group extends Base {
+        constructor(field: string)
+    }
+}
+
+declare namespace LogicFieldClass {
+    class Base {
+        /**
+         * Logic对象序列化为json字符串形式
+         */
+        toJson(): string
+    }
+
+    class Field extends Base {
+        constructor(field: string, alias: string)
+    }
+}
+
 declare interface SetupParams {
     /**
      * objectSchema绝对路径
@@ -907,6 +961,33 @@ declare interface ObjectFindParams {
      * 分页规则
      */
     limit?: LogicLimitClass.Base
+}
+
+declare interface ObjectFieldFindParams {
+    /**
+     * 过滤条件
+     */
+     field?: LogicFieldClass.Base
+
+    /**
+     * 过滤条件
+     */
+    where?: LogicWhereClass.Base
+
+    /**
+     * 排序规则
+     */
+    sort?: LogicSortClass.Base | LogicSortClass.Base[]
+    
+    /**
+     * 分页规则
+     */
+    limit?: LogicLimitClass.Base
+
+    /**
+     * 分页规则
+     */
+     group?: LogicGroupClass.Base
 }
 
 export = ORM;

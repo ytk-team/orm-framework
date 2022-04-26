@@ -96,4 +96,8 @@ module.exports = class {
     async relationClear(subject) {
         throw new Error('this method is supposed to be implemented by subclass');
     }
+    
+    async objectFieldFind(field =undefined,where = undefined, sort = undefined, limit = undefined,group = undefined){
+        throw new Error('this method is supposed to be implemented by subclass');
+    }
 }

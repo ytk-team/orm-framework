@@ -4,12 +4,12 @@ const IndexAnalyser = require('../../module/index/index.js');
 
 module.exports = class extends require('../base.js') {
     constructor(name) {
-        const {definitionDir, indexes} = require('../../global');
+        const { definitionDir, indexes } = require('../../global');
         super(require(`${definitionDir.objectPath.schema}/${name}`));
-        
+
         this._router = new Router(name, `${definitionDir.objectPath.router}`);
         if (indexes[name] === undefined) { //缓存每个表的索引字段
-            indexes[name] = IndexAnalyser.analysis(this._schema).map(({path}) => path).concat('.id');
+            indexes[name] = IndexAnalyser.analysis(this._schema).map(({ path }) => path).concat('.id');
         }
     }
 
@@ -62,14 +62,14 @@ module.exports = class extends require('../base.js') {
     }
 
     async find(params) {
-        let {where = undefined, sort = undefined, limit = undefined} = params || {};
+        let { where = undefined, sort = undefined, limit = undefined } = params || {};
 
         //支持json格式的logic表达式查询
         if (where !== undefined) where = Logic.normalize(where);
         if (sort !== undefined) sort = Logic.normalize(sort);
         if (limit !== undefined) limit = Logic.normalize(limit);
 
-        let rows = await this._router.objectFind({where, sort, limit});
+        let rows = await this._router.objectFind({ where, sort, limit });
         if (rows.length === 0) return rows;
 
         return rows.map(row => this.fixData(".", row));
@@ -79,6 +79,20 @@ module.exports = class extends require('../base.js') {
         //支持json格式的logic表达式查询
         if (where !== undefined) where = Logic.normalize(where);
         return await this._router.objectCount(where);
+    }
+
+    async fieldFind(params) {
+        let { field = undefined, where = undefined, sort = undefined, limit = undefined, group = undefined } = params || {};
+        if (field !== undefined) field = Logic.normalize(field);
+        if (group !== undefined) group = Logic.normalize(group);
+        if (where !== undefined) where = Logic.normalize(where);
+        if (sort !== undefined) sort = Logic.normalize(sort);
+        if (limit !== undefined) limit = Logic.normalize(limit);
+
+        let rows = await this._router.objectFieldFind({ field, where, sort, limit, group });
+        if (rows.length === 0) return rows;
+
+        return rows.map(row => this.fixData(".", row));
     }
 
 

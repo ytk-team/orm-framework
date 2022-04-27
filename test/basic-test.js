@@ -231,6 +231,29 @@ describe('#basic', function () {
 
     })
 
+    it('[object-find-group]', async function () {
+        await Promise.all([
+            ObjectUser.set(Users[0]),
+            ObjectUser.set(Users[1]),
+            ObjectUser.set(Users[2]),
+            ObjectMessage.set(Messages[0]),
+            ObjectMessage.set(Messages[1]),
+        ]);
+        assert((await ObjectUser.find()).length === 3, `object find where [.find()] failed`);
+        let result = await ObjectUser.find({group:ORM.Logic.group('.gender') })
+        assert(result.length === 2 && result[0].gender !== result[1].gender, `object fieldFind filed [.fieldFind(field operator =.gender)] failed`);
+
+        result = await ObjectUser.find({group:ORM.Logic.group('.gender'), limit: ORM.Logic.limit(1), sort: ORM.Logic.sort('.id') });
+        assert(result.length === 1 && result[0].id === Users[0].id, `object find limit failed`);
+        result = await ObjectUser.find({group:ORM.Logic.group('.gender'), limit: ORM.Logic.limit(1).toJson(), sort: ORM.Logic.sort('.id').toJson() });
+        assert(result.length === 1 && result[0].id === Users[0].id, `[toJson]object find limit failed`);
+
+        result = await ObjectUser.find({group:ORM.Logic.group('.gender'), limit: ORM.Logic.limit(1, 1), sort: ORM.Logic.sort('.id') });
+        assert(result.length === 1 && result[0].id === Users[2].id, `object find limit skip failed`);
+        result = await ObjectUser.find({group:ORM.Logic.group('.gender'), limit: ORM.Logic.limit(1, 1).toJson(), sort: ORM.Logic.sort('.id').toJson() });
+        assert(result.length === 1 && result[0].id === Users[2].id, `[toJson]object find limit skip failed`);
+    })
+
     it('[object-find-where]', async function () {
         await Promise.all([
             ObjectUser.set(Users[0]),

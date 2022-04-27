@@ -62,14 +62,15 @@ module.exports = class extends require('../base.js') {
     }
 
     async find(params) {
-        let { where = undefined, sort = undefined, limit = undefined } = params || {};
+        let { where = undefined, sort = undefined, limit = undefined,group = undefined } = params || {};
 
         //支持json格式的logic表达式查询
         if (where !== undefined) where = Logic.normalize(where);
+        if (group !== undefined) group = Logic.normalize(group);
         if (sort !== undefined) sort = Logic.normalize(sort);
         if (limit !== undefined) limit = Logic.normalize(limit);
 
-        let rows = await this._router.objectFind({ where, sort, limit });
+        let rows = await this._router.objectFind({ where, sort, limit, group });
         if (rows.length === 0) return rows;
 
         return rows.map(row => this.fixData(".", row));

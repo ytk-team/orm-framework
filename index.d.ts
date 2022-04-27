@@ -83,7 +83,7 @@ declare namespace ORM {
         /**
          * 对象查找排序分页操作
          */
-        find({where, sort, limit}: ObjectFindParams): Promise<any[]>
+        find({where, sort, limit, group}: ObjectFindParams): Promise<any[]>
 
         /**
          * 对象查找排序分页分组查询单个字段操作
@@ -268,8 +268,9 @@ declare namespace ORM {
          * @param {LogicWhereClass.Base} where 查询参数
          * @param {LogicSortClass.Base | LogicSortClass.Base[]} sort 排序参数
          * @param {LogicLimitClass.Base} limit 分页参数
+         * @param {LogicGroupClass.Base | LogicGroupClass.Base[]} group 分组参数
          */
-        objectFind(where: LogicWhereClass.Base, sort: (LogicSortClass.Base | LogicSortClass.Base[]) , limit: LogicLimitClass.Base): Promise<any[]>
+        objectFind(where: LogicWhereClass.Base, sort: (LogicSortClass.Base | LogicSortClass.Base[]) , limit: LogicLimitClass.Base ,group: (LogicGroupClass.Base | LogicGroupClass.Base[])): Promise<any[],>
 
         /**
          * 对象查找排序分页分组查询单个字段操作
@@ -277,9 +278,9 @@ declare namespace ORM {
          * @param {LogicWhereClass.Base} where 查询参数
          * @param {LogicSortClass.Base | LogicSortClass.Base[]} sort 排序参数
          * @param {LogicLimitClass.Base} limit 分页参数
-         * @param {LogicGroupClass.Base | LogicGroupClass.Base[]} group 排序参数
+         * @param {LogicGroupClass.Base | LogicGroupClass.Base[]} group 分组参数
          */
-         objectFieldFind(field:LogicFieldClass.Base ,where: LogicWhereClass.Base, sort: (LogicSortClass.Base | LogicSortClass.Base[]) , limit: LogicLimitClass.Base , group: LogicGroupClass.Base): Promise<any[]>
+         objectFieldFind(field:LogicFieldClass.Base ,where: LogicWhereClass.Base, sort: (LogicSortClass.Base | LogicSortClass.Base[]) , limit: LogicLimitClass.Base , group: (LogicGroupClass.Base | LogicGroupClass.Base[])): Promise<any[]>
     
         /**
          * 统计对象数量，支持条件查询
@@ -961,11 +962,16 @@ declare interface ObjectFindParams {
      * 分页规则
      */
     limit?: LogicLimitClass.Base
+
+    /**
+     * 分组规则
+     */
+     group?: LogicGroupClass.Base
 }
 
 declare interface ObjectFieldFindParams {
     /**
-     * 过滤条件
+     * 查询单个字段
      */
      field?: LogicFieldClass.Base
 
@@ -985,9 +991,9 @@ declare interface ObjectFieldFindParams {
     limit?: LogicLimitClass.Base
 
     /**
-     * 分页规则
+     * 分组规则
      */
-     group?: LogicGroupClass.Base
+    group?: LogicGroupClass.Base
 }
 
 export = ORM;

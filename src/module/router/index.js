@@ -79,10 +79,10 @@ module.exports = class Wrapper {
         return await this._routerCurrent.objectArrayNodeShift(id, path);
     }
 
-    async objectFind({where, sort, limit}) {
-        let value = await this._routerCurrent.objectFind({where, sort, limit});
+    async objectFind({where, sort, limit, group}) {
+        let value = await this._routerCurrent.objectFind({where, sort, limit, group});
         if ((value.length === 0) && (this._routerDeprecated !== undefined)) {
-            value = await this._routerDeprecated.objectFind({where, sort, limit});
+            value = await this._routerDeprecated.objectFind({where, sort, limit ,group});
         }
         return value;
     }
@@ -303,7 +303,7 @@ class Router {
     }
 
     //在cache与persistence共存时，存在cache没有数据而persistence有情况，故此情况直接查persistence
-    async objectFind({where, sort, limit}) {
+    async objectFind({where, sort, limit, group}) {
         const {indexes} = require('../../global');
         let rows = [];
         if (this._cache !== undefined && this._persistence === undefined) {
@@ -312,7 +312,7 @@ class Router {
             for (let shard of this._cache.shards) {
                 let backend = Backend.create(shard, indexes[this._moduleName]);
                 if (backend.support.objectFind === false) break;
-                Array.prototype.push.apply(rows, await backend.objectFind({where, sort, limit}));
+                Array.prototype.push.apply(rows, await backend.objectFind({where, sort, limit ,group}));
                 hadFind = true;
             }
             if (hadFind) return rows;
@@ -324,7 +324,7 @@ class Router {
             for (let shard of this._persistence.shards) {
                 let backend = Backend.create(shard, indexes[this._moduleName]);
                 if (backend.support.objectFind === false) break;
-                Array.prototype.push.apply(rows, await backend.objectFind({where, sort, limit}));
+                Array.prototype.push.apply(rows, await backend.objectFind({where, sort, limit, group}));
                 hadFind = true;
             }
             if (hadFind) return rows;

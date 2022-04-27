@@ -75,8 +75,8 @@ const RelationUserMessage = new ORM.Relation('user.message');
 |arrayNodeDel|(id, path)|无|删除某条记录下的数组节点里指定位置的元素|
 |arrayNodePop|(id, path)|object|弹出某条记录下的数组节点尾部一个元素|
 |arrayNodeShift|(id, path)|object|弹出某条记录下的数组节点头部一个元素|
-|find|({where?, sort?, limit?})|array|查找所有符合规则的object,支持排序、分页|
-|fieldFind|({field?,where?, sort?, limit?,group})|array|查找所有符合规则的object,支持排序、分页、分组、取单个字段|
+|find|({where?, sort?, limit?, group?})|array|查找所有符合规则的object,支持排序、分页、分组|
+|fieldFind|({field?,where?, sort?, limit?,group?})|array|查找所有符合规则的object,支持排序、分页、分组、取单个字段|
 |count|(where)|integer|统计所有符合规则的object数量|
 
 #### Relation
@@ -522,7 +522,7 @@ static get media() { //set media name
 |objectArrayNodePop|(id, path)|object|undefined|否|弹出某条记录下的数组节点尾部一个元素|
 |objectArrayNodeShift|(id, path)|object|undefined|否|弹出某条记录下的数组节点头部一个元素|
 |objectArrayNodeShift|(id, path)|object|undefined|否|弹出某条记录下的数组节点头部一个元素|
-|objectFind|({where, sort, limit})|array|[]|否|查找所有符合规则的对象,支持排序、分页|
+|objectFind|({where, sort, limit, group})|array|[]|否|查找所有符合规则的对象,支持排序、分页、分组|
 |objectFieldFind|({field, where, sort, limit, group})|array|[]|否|查找所有符合规则的对象,支持排序、分页、分组、查询单个字段|
 |objectCount|(where)|integer|0|否|统计所有符合规则的对象数量|
 |relationFetch|(subject, object)|object|undefined|是|返回关系中某个对象|

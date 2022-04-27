@@ -158,24 +158,28 @@ module.exports = class extends Base {
         })
     }
 
-    async objectFind({where = undefined, sort = undefined, limit = undefined}) {
+    async objectFind({where = undefined, sort = undefined, limit = undefined,group=undefined}) {
         let sql = '';
         let whereSql = '';
         let sortSql = '';
+        let groupSql='';
         var binds = {};
         if (where != undefined) {
             var {query, binds} = this._parseWhereToMysql(where);
             whereSql = `WHERE ${query}`;
         }
+        if(group != undefined){
+            groupSql = `GROUP BY ${[].concat(group).map(_ => this._parseGroupToMysql(_)).join(',')}`;
+        }
         if (sort != undefined) {
             sortSql = `ORDER BY ${[].concat(sort).map(_ => this._parseSortToMysql(_)).join(',')}`;
         }
         if (limit != undefined) {
-            let subSql = Mysql.format(`SELECT _id FROM ?? ${whereSql} ${sortSql} ${this._parseLimitToMysql(limit)}`, [this._connParam.table]);
+            let subSql = Mysql.format(`SELECT _id FROM ?? ${whereSql} ${groupSql} ${sortSql} ${this._parseLimitToMysql(limit)}`, [this._connParam.table]);
             sql = Mysql.format(`SELECT * FROM ?? JOIN (${subSql}) AS sub using(_id) ${sortSql}`, [this._connParam.table]);
         }
         else {
-            sql = Mysql.format(`SELECT doc FROM ?? ${whereSql} ${sortSql}`, [this._connParam.table]);
+            sql = Mysql.format(`SELECT doc FROM ?? ${whereSql} ${groupSql} ${sortSql}`, [this._connParam.table]);
         }
         return (await this._execute(sql, binds)).map(_ => {
             let row = JSON.parse(_.doc);
@@ -376,6 +380,7 @@ module.exports = class extends Base {
         let sortSql = '';
         let fieldSql = 'doc';
         let groupSql='';
+        var binds = {};
         if(field !=undefined){
             fieldSql = ` ${[].concat(field).map(_ => this._parseFieldToMysql(_)).join(',')}`;
         }

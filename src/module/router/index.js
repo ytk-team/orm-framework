@@ -87,10 +87,10 @@ module.exports = class Wrapper {
         return value;
     }
 
-    async objectCount(where) {
-        let count = await this._routerCurrent.objectCount(where);
+    async objectCount(where,group) {
+        let count = await this._routerCurrent.objectCount(where,group);
         if ((count === 0) && (this._routerDeprecated !== undefined)) {
-            count = await this._routerDeprecated.objectCount(where);
+            count = await this._routerDeprecated.objectCount(where,group);
         }
         return count;
     }
@@ -334,7 +334,7 @@ class Router {
     }
 
     //在cache与persistence共存时，存在cache没有数据而persistence有情况，故此情况直接查persistence
-    async objectCount(where) {
+    async objectCount(where,group) {
         const {indexes} = require('../../global');
         let count = 0;
         if (this._cache !== undefined && this._persistence === undefined) {
@@ -342,7 +342,7 @@ class Router {
             for (let shard of this._cache.shards) {
                 let backend = Backend.create(shard, indexes[this._moduleName]);
                 if (backend.support.objectCount === false) break;
-                count += await backend.objectCount(where);
+                count += await backend.objectCount(where,group);
                 hadFind = true;
             }
             if (hadFind) return count;
@@ -354,7 +354,7 @@ class Router {
             for (let shard of this._persistence.shards) {
                 let backend = Backend.create(shard, indexes[this._moduleName]);
                 if (backend.support.objectCount === false) break;
-                count += await backend.objectCount(where);
+                count += await backend.objectCount(where,group);
                 hadFind = true;
             }
             if (hadFind) return count;

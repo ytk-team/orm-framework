@@ -133,6 +133,15 @@ describe('#basic', function () {
         result = await ObjectUser.count(ORM.Logic.whereEq('.id', Users[0].id).toJson());
         assert(result === 1, `[toJson]object count = failed`);
 
+        result = await ObjectUser.count(undefined,ORM.Logic.group('.gender'));
+        assert(result === 2, ` not  where object count group gender = failed`);
+
+        result = await ObjectUser.count(ORM.Logic.whereEq('.name', Users[0].name),ORM.Logic.group('.gender'));
+        assert(result === 1, `object count where name group gender = failed`);
+
+        result = await ObjectUser.count(undefined,[ORM.Logic.group('.gender'),ORM.Logic.group('.name')]);
+        assert(result === 3, ` not where object  count where name group[] gender = failed`);
+
         result = await ObjectUser.count(ORM.Logic.whereEq('.name', Users[0].name));
         assert(result === 1, `object count name = failed`);
         result = await ObjectUser.count(ORM.Logic.whereEq('.name', Users[0].name).toJson());

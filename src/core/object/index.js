@@ -76,10 +76,11 @@ module.exports = class extends require('../base.js') {
         return rows.map(row => this.fixData(".", row));
     }
 
-    async count(where = undefined) {
+    async count(where = undefined,group = undefined) {
         //支持json格式的logic表达式查询
         if (where !== undefined) where = Logic.normalize(where);
-        return await this._router.objectCount(where);
+        if (group !== undefined) group = Logic.normalize(group);
+        return await this._router.objectCount(where,group);
     }
 
     async fieldFind(params) {

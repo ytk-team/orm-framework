@@ -93,8 +93,9 @@ declare namespace ORM {
         /**
          * 统计对象数量，支持条件查询
          * @param {LogicWhereClass.Base} where 查询条件
+         * @param {LogicGroupClass.Base} where 分组
          */
-        count(where?: LogicWhereClass.Base): Promise<number>
+        count(where?: LogicWhereClass.Base ,group?: LogicGroupClass.Base): Promise<number>
     }
     
     /**
@@ -283,10 +284,11 @@ declare namespace ORM {
          objectFieldFind(field:LogicFieldClass.Base ,where: LogicWhereClass.Base, sort: (LogicSortClass.Base | LogicSortClass.Base[]) , limit: LogicLimitClass.Base , group: (LogicGroupClass.Base | LogicGroupClass.Base[])): Promise<any[]>
     
         /**
-         * 统计对象数量，支持条件查询
+         * 统计对象数量，支持条件查询,支持分组
          * @param　{LogicWhereClass.Base} where 查询参数
+         * @param　{LogicGroupClass.Base} group 查询参数
          */
-        objectCount(where: LogicWhereClass.Base): Promise<number>
+        objectCount(where: LogicWhereClass.Base,group: LogicGroupClass.Base): Promise<number>
     
         /**
          * 获取主key与关联key间的关系信息

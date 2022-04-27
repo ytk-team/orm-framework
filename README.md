@@ -77,7 +77,7 @@ const RelationUserMessage = new ORM.Relation('user.message');
 |arrayNodeShift|(id, path)|object|弹出某条记录下的数组节点头部一个元素|
 |find|({where?, sort?, limit?, group?})|array|查找所有符合规则的object,支持排序、分页、分组|
 |fieldFind|({field?,where?, sort?, limit?,group?})|array|查找所有符合规则的object,支持排序、分页、分组、取单个字段|
-|count|(where)|integer|统计所有符合规则的object数量|
+|count|(where,group)|integer|统计所有符合规则的object数量|
 
 #### Relation
 提供关系操作方法
@@ -524,7 +524,7 @@ static get media() { //set media name
 |objectArrayNodeShift|(id, path)|object|undefined|否|弹出某条记录下的数组节点头部一个元素|
 |objectFind|({where, sort, limit, group})|array|[]|否|查找所有符合规则的对象,支持排序、分页、分组|
 |objectFieldFind|({field, where, sort, limit, group})|array|[]|否|查找所有符合规则的对象,支持排序、分页、分组、查询单个字段|
-|objectCount|(where)|integer|0|否|统计所有符合规则的对象数量|
+|objectCount|(where,group)|integer|0|否|统计所有符合规则的对象数量|
 |relationFetch|(subject, object)|object|undefined|是|返回关系中某个对象|
 |relationPut|(relation)|无|无|是|将某个对象放入关系中|
 |relationRemove|(subject, object)|无|无|是|从关系中移除某个对象|

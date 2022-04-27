@@ -188,15 +188,21 @@ module.exports = class extends Base {
         });
     }
 
-    async objectCount(where = undefined) {
+    async objectCount(where = undefined,group = undefined) {
         let sql = '';
         let whereSql = '';
+        let groupSql='';
         var binds = {};
         if (where != undefined) {
             var {query, binds} = this._parseWhereToMysql(where);
             whereSql = `WHERE ${query}`;
         }
-        sql = Mysql.format(`SELECT COUNT(_id) as count FROM ?? ${whereSql}`, [this._connParam.table]);
+        if(group != undefined){
+            groupSql = `GROUP BY ${[].concat(group).map(_ => this._parseGroupToMysql(_)).join(',')}`;
+            sql = Mysql.format(`SELECT COUNT(COUNT) AS count FROM (SELECT COUNT(_id) as count FROM ?? ${whereSql} ${groupSql}) tmpc `, [this._connParam.table]);
+        }else{
+            sql = Mysql.format(`SELECT COUNT(_id) as count FROM ?? ${whereSql}`, [this._connParam.table]);
+        }
         let [{count}] = await this._execute(sql, binds);
         return count;
     }

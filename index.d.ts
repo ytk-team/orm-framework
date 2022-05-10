@@ -446,6 +446,13 @@ declare namespace ORM {
          * @param {string} value 查询值 
          */
         function whereContain(field: string, value: string | number | boolean): LogicWhereClass.WhereContain
+
+        /**
+         * SQL:MATCH AGAINST  IN BOOLEAN MODE 全文索引布尔操作
+         * @param {string} field 字段路径
+         * @param {string} value 查询值 
+         */
+         function WhereContainBoolean(field: string, value: string | number | boolean): LogicWhereClass.WhereContainBoolean
     
         /**
          * SQL:BETWEEN操作
@@ -854,6 +861,10 @@ declare namespace LogicWhereClass {
     }
 
     class WhereContain extends Base {
+        constructor(field: string, value: string | number | boolean)
+    }
+
+    class WhereContainBoolean extends Base {
         constructor(field: string, value: string | number | boolean)
     }
 

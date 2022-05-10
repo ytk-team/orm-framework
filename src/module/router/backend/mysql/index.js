@@ -341,6 +341,14 @@ module.exports = class extends Base {
                 query: `MATCH ${columnName} AGAINST (:${placeholder})`,
                 binds: totalBinds
             }
+        }else if (where instanceof Type.WhereContainBoolean) {
+            let columnName = this._getColumnName(where.field);
+            let placeholder = `_${uuid().replace(/\-/g, "")}`;
+            totalBinds[placeholder] = where.value;
+            return {
+                query: `MATCH ${columnName} AGAINST (:${placeholder} IN BOOLEAN MODE)`,
+                binds: totalBinds
+            }
         }
         else if (where instanceof Type.WhereIsUndef) {
             let columnName = this._getColumnName(where.field);

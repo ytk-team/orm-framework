@@ -95,7 +95,7 @@ const RelationUserMessage = new ORM.Relation('user.message');
 #### Logic
 提供一套标准的查询、排序、分页语法，在Object``find``、``count``,Relation``list``、``count``中可以使用
 ```js
-const {whereEq, whereNq, whereGt, whereGe, whereLt, whereLe, whereContain, whereIn, whereBetween, whereLike, whereAnd, whereOr, whereNot, sort, limit, field , group } = require('@qtk/orm-framework').Logic;
+const {whereEq, whereNq, whereGt, whereGe, whereLt, whereLe, whereContain, whereContainBoolean,whereIn, whereBetween, whereLike, whereAnd, whereOr, whereNot, sort, limit, field , group } = require('@qtk/orm-framework').Logic;
 ```
 
 |方法|作用|参数|示例(按照属性栏的顺序)|
@@ -107,6 +107,7 @@ const {whereEq, whereNq, whereGt, whereGe, whereLt, whereLe, whereContain, where
 |whereLt|小于|(field, value)|whereLt('.a', 1)|
 |whereLe|小于等于|(field, value)|whereLe('.a', 1)|
 |whereContain|数组包含|(field, value)|whereContain('.arr[*]', 1)|
+|whereContainBoolean|数组包含|(field, value)|whereContainBoolean('.arr[*]', 1)|
 |whereIn|枚举|(field, ...values)|whereIn('.a', 1, 2, 3)|
 |whereBetween|区段之间|(field, from, to)|whereBetween('.a', 1, 2)|
 |whereLike|模糊匹配|(field, value)|whereLike('.a', '%a%')|
@@ -572,6 +573,7 @@ get support() {
 |WhereIsUndef|field|'.a'|
 |WhereIsDef|field|'.a'|
 |WhereContain|field, value|'.arr[*]', 1|
+|WhereContainBoolean|field, value|'.arr[*]', 1|
 |Sort|field, order|'.a', 'DESC'|
 |Limit|limit, skip|1,1|
 |Field|field, alias|'.name','nameS'|

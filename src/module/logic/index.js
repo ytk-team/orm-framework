@@ -13,6 +13,7 @@ const Type = {
     WhereLt: require('./where/lt'),
     WhereLe: require('./where/le'),
     WhereContain: require('./where/contain'),
+    WhereContainBoolean: require('./where/contain_boolean'),
     WhereIsUndef: require('./where/is_def'),
     WhereIsDef: require('./where/is_undef'),
     Sort: require('./sort'),
@@ -74,6 +75,10 @@ module.exports = class {
         return new Type.WhereContain(field, value);
     }
 
+    static WhereContainBoolean(field, value) {
+        return new Type.WhereContainBoolean(field, value);
+    }
+
     static whereBetween(field, from, to) {
         return new Type.WhereBetween(field, from, to);
     }
@@ -130,7 +135,9 @@ module.exports = class {
             case 'WhereLe':
             case 'WhereLt':
             case 'WhereContain':            
-                return new Type[logic.type](logic.fields._field ,logic.fields._value); 
+                return new Type[logic.type](logic.fields._field ,logic.fields._value);
+            case 'WhereContainBoolean':            
+                return new Type[logic.type](logic.fields._field ,logic.fields._value);  
             case 'WhereIsUndef':
             case 'WhereIsDef':               
                 return new Type[logic.type](logic.fields._field);                 

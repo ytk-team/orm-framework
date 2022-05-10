@@ -337,6 +337,12 @@ describe('#basic', function () {
         result = await ObjectUser.find({ where: ORM.Logic.whereContain('.friends[*].fid', '0000000000000002').toJson() });
         assert(result.length === 1 && result[0].id === Users[2].id, `[toJson]object find where [.friends[*].fid] failed`);
 
+
+        result = await ObjectUser.find({ where: ORM.Logic.WhereContainBoolean('.friends[*].fid', '0000000000000002*') });
+        assert(result.length === 1 && result[0].id === Users[2].id, `object find WhereContainBoolean [.friends[*].fid] failed`);
+        result = await ObjectUser.find({ where: ORM.Logic.WhereContainBoolean('.friends[*].fid', '000000000000000*').toJson() });
+        assert(result.length === 2, `[toJson]object find WhereContainBoolean [.friends[*].fid] failed`);
+
         result = await ObjectUser.find({ where: ORM.Logic.whereEq('.isVip', true) });
         assert(result.length === 2, `object find where boolean [.find(isVip where operator =)] failed`);
         result = await ObjectUser.find({ where: ORM.Logic.whereEq('.isVip', true).toJson() });

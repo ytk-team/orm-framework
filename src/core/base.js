@@ -82,6 +82,7 @@ module.exports = class {
             where instanceof Type.WhereLe ||
             where instanceof Type.WhereLt ||
             where instanceof Type.WhereContain ||
+            where instanceof Type.WhereContainBoolean ||
             where instanceof Type.WhereIsUndef ||
             where instanceof Type.WhereIsDef
         ) {

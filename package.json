@@ -1,6 +1,6 @@
 {
   "author": {
-    "name": "ray && leo && skip"
+    "name": "ray && leo && skip && echo"
   },
   "bin": {
     "orm_build_mysql": "bin/build_mysql/index.js",
@@ -46,5 +46,5 @@
   "scripts": {
     "test": "mocha"
   },
-  "version": "3.3.9"
+  "version": "3.4.0"
 }

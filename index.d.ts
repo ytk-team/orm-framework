@@ -96,6 +96,12 @@ declare namespace ORM {
          * @param {LogicGroupClass.Base} where 分组
          */
         count(where?: LogicWhereClass.Base ,group?: LogicGroupClass.Base): Promise<number>
+
+        /**
+         * 原生sql查询
+         * @param  {string} sql 原生sql语句
+         */
+        query(sql:string): Promise<void>
     }
     
     /**
@@ -271,7 +277,7 @@ declare namespace ORM {
          * @param {LogicLimitClass.Base} limit 分页参数
          * @param {LogicGroupClass.Base | LogicGroupClass.Base[]} group 分组参数
          */
-        objectFind(where: LogicWhereClass.Base, sort: (LogicSortClass.Base | LogicSortClass.Base[]) , limit: LogicLimitClass.Base ,group: (LogicGroupClass.Base | LogicGroupClass.Base[])): Promise<any[],>
+        objectFind(where: LogicWhereClass.Base, sort: (LogicSortClass.Base | LogicSortClass.Base[]) , limit: LogicLimitClass.Base ,group: (LogicGroupClass.Base | LogicGroupClass.Base[])): Promise<any[]>
 
         /**
          * 对象查找排序分页分组查询单个字段操作
@@ -282,7 +288,12 @@ declare namespace ORM {
          * @param {LogicGroupClass.Base | LogicGroupClass.Base[]} group 分组参数
          */
          objectFieldFind(field:LogicFieldClass.Base ,where: LogicWhereClass.Base, sort: (LogicSortClass.Base | LogicSortClass.Base[]) , limit: LogicLimitClass.Base , group: (LogicGroupClass.Base | LogicGroupClass.Base[])): Promise<any[]>
-    
+        
+         /**
+         * 执行原生sql
+         * @param {string} sql 原生sql语句
+         */
+         objectQuery(sql:string): Promise<void>
         /**
          * 统计对象数量，支持条件查询,支持分组
          * @param　{LogicWhereClass.Base} where 查询参数

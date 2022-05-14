@@ -423,6 +423,17 @@ module.exports = class extends Base {
 
     }
 
+    async objectQuery(sql){
+        sql = sql.replace(/<table>/g,this._connParam.table)
+        sql = Mysql.format(sql);
+        return (await this._execute(sql)).map(_ => {
+            if(_.doc !==undefined){
+                _.doc = JSON.parse(_.doc);
+            }
+            return _;
+        });
+    }
+
     _parseGroupToMysql(group){
         let columnName = this._getColumnName(group.field);
         return `${columnName} `;

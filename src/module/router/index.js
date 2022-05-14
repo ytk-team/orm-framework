@@ -159,6 +159,11 @@ module.exports = class Wrapper {
         return value;
     }
 
+    async objectQuery(sql){
+        assert(typeof sql == "string" && sql!='', 'sql error');
+        return  await this._routerCurrent.objectQuery(sql);
+    }
+
 }
 
 class Router {
@@ -454,6 +459,18 @@ class Router {
             if (hadFind) return rows;
         }
 
+        throw new Error('can not use find by any of media');
+    }
+
+    async objectQuery(sql){
+        //原生sql不支持分表查询
+        const {indexes} = require('../../global');
+        if (this._persistence !== undefined) {
+            let shard = this._persistence.shards[0]
+            let backend = Backend.create(shard, indexes[this._moduleName]);
+            if (backend.support.objectQuery=== false)  throw new Error('backend.support.objectQuery is false');;
+            return  await backend.objectQuery(sql);
+        }
         throw new Error('can not use find by any of media');
     }
 }

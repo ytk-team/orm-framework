@@ -33,11 +33,14 @@ describe('#basic', function () {
         ])
     });
 
+    
+
     it('[object-set]', async function () {
         this.timeout(10000);
         await ObjectUser.set(Users[0]);
         assert(await ObjectUser.has(Users[0].id), `object set failed`);
     });
+
 
     it('[object-has]', async function () {
         await ObjectUser.set(Users[2]);
@@ -119,6 +122,23 @@ describe('#basic', function () {
         assert(friend1Id === friend1.fid && (await ObjectUser.get(Users[0].id)).friends.length === 1, `object array shift failed`);
     });
 
+
+    it('[object-query]', async function () {
+        await Promise.all([
+            ObjectUser.set(Users[0]),
+            ObjectUser.set(Users[1]),
+            ObjectUser.set(Users[2]),
+            ObjectMessage.set(Messages[0]),
+            ObjectMessage.set(Messages[1]),
+        ]);
+        let result = await ObjectUser.query("select * from <table>  ")
+        assert(result.length == 3, `object query failed`);
+
+        result = await ObjectUser.query("select doc from <table>  where `.gender` =1 ")
+        assert(result.length == 1 && result[0].doc && result[0].doc.gender == 1, `object query where failed`);
+    });
+
+
     it('[object-count]', async function () {
         await Promise.all([
             ObjectUser.set(Users[0]),
@@ -133,13 +153,13 @@ describe('#basic', function () {
         result = await ObjectUser.count(ORM.Logic.whereEq('.id', Users[0].id).toJson());
         assert(result === 1, `[toJson]object count = failed`);
 
-        result = await ObjectUser.count(undefined,ORM.Logic.group('.gender'));
+        result = await ObjectUser.count(undefined, ORM.Logic.group('.gender'));
         assert(result === 2, ` not  where object count group gender = failed`);
 
-        result = await ObjectUser.count(ORM.Logic.whereEq('.name', Users[0].name),ORM.Logic.group('.gender'));
+        result = await ObjectUser.count(ORM.Logic.whereEq('.name', Users[0].name), ORM.Logic.group('.gender'));
         assert(result === 1, `object count where name group gender = failed`);
 
-        result = await ObjectUser.count(undefined,[ORM.Logic.group('.gender'),ORM.Logic.group('.name')]);
+        result = await ObjectUser.count(undefined, [ORM.Logic.group('.gender'), ORM.Logic.group('.name')]);
         assert(result === 3, ` not where object  count where name group[] gender = failed`);
 
         result = await ObjectUser.count(ORM.Logic.whereEq('.name', Users[0].name));
@@ -154,6 +174,7 @@ describe('#basic', function () {
 
         result = await ObjectUser.count(ORM.Logic.whereIn('.name', Users[0].name, Users[1].name));
         assert(result === 2, `object count in failed`);
+
         result = await ObjectUser.count(ORM.Logic.whereIn('.name', Users[0].name, Users[1].name).toJson());
         assert(result === 2, `[toJson]object count in failed`);
 
@@ -235,7 +256,7 @@ describe('#basic', function () {
         ]);
 
         assert((await ObjectUser.fieldFind()).length === 3, `object fieldFind  [.fieldFind()] failed`);
-        let result = await ObjectUser.fieldFind({ field: [ORM.Logic.field("count(1)", "count"),ORM.Logic.field(".gender","genderS")],group:ORM.Logic.group('.gender') })
+        let result = await ObjectUser.fieldFind({ field: [ORM.Logic.field("count(1)", "count"), ORM.Logic.field(".gender", "genderS")], group: ORM.Logic.group('.gender') })
         assert(result.length === 2 && result[0].count === 2 && result[0].genderS === 0, `object fieldFind filed [.fieldFind(field operator =.name)] failed`);
 
     })
@@ -249,17 +270,17 @@ describe('#basic', function () {
             ObjectMessage.set(Messages[1]),
         ]);
         assert((await ObjectUser.find()).length === 3, `object find where [.find()] failed`);
-        let result = await ObjectUser.find({group:ORM.Logic.group('.gender') })
+        let result = await ObjectUser.find({ group: ORM.Logic.group('.gender') })
         assert(result.length === 2 && result[0].gender !== result[1].gender, `object fieldFind filed [.fieldFind(field operator =.gender)] failed`);
 
-        result = await ObjectUser.find({group:ORM.Logic.group('.gender'), limit: ORM.Logic.limit(1), sort: ORM.Logic.sort('.id') });
+        result = await ObjectUser.find({ group: ORM.Logic.group('.gender'), limit: ORM.Logic.limit(1), sort: ORM.Logic.sort('.id') });
         assert(result.length === 1 && result[0].id === Users[0].id, `object find limit failed`);
-        result = await ObjectUser.find({group:ORM.Logic.group('.gender'), limit: ORM.Logic.limit(1).toJson(), sort: ORM.Logic.sort('.id').toJson() });
+        result = await ObjectUser.find({ group: ORM.Logic.group('.gender'), limit: ORM.Logic.limit(1).toJson(), sort: ORM.Logic.sort('.id').toJson() });
         assert(result.length === 1 && result[0].id === Users[0].id, `[toJson]object find limit failed`);
 
-        result = await ObjectUser.find({group:ORM.Logic.group('.gender'), limit: ORM.Logic.limit(1, 1), sort: ORM.Logic.sort('.id') });
+        result = await ObjectUser.find({ group: ORM.Logic.group('.gender'), limit: ORM.Logic.limit(1, 1), sort: ORM.Logic.sort('.id') });
         assert(result.length === 1 && result[0].id === Users[2].id, `object find limit skip failed`);
-        result = await ObjectUser.find({group:ORM.Logic.group('.gender'), limit: ORM.Logic.limit(1, 1).toJson(), sort: ORM.Logic.sort('.id').toJson() });
+        result = await ObjectUser.find({ group: ORM.Logic.group('.gender'), limit: ORM.Logic.limit(1, 1).toJson(), sort: ORM.Logic.sort('.id').toJson() });
         assert(result.length === 1 && result[0].id === Users[2].id, `[toJson]object find limit skip failed`);
     })
 
@@ -314,6 +335,11 @@ describe('#basic', function () {
             )
         });
         assert(result.length === 2 && [Users[0].id, Users[1].id].includes(result[0].id) && [Users[0].id, Users[1].id].includes(result[1].id), `object find where [.find(where or)] failed`);
+        
+        let js = ORM.Logic.normalize(ORM.Logic.whereOr(
+            ORM.Logic.whereEq('.name', Users[0].name),
+            ORM.Logic.whereEq('.name', Users[1].name)
+        ).toJson())
         result = await ObjectUser.find({
             where: ORM.Logic.whereOr(
                 ORM.Logic.whereEq('.name', Users[0].name),

@@ -426,12 +426,13 @@ module.exports = class extends Base {
     async objectQuery(sql){
         sql = sql.replace(/<table>/g,this._connParam.table)
         sql = Mysql.format(sql);
-        return (await this._execute(sql)).map(_ => {
+        let res = await this._execute(sql);
+        return res instanceof Array ? res.map(_ => {
             if(_.doc !==undefined){
                 _.doc = JSON.parse(_.doc);
             }
             return _;
-        });
+        }):res;
     }
 
     _parseGroupToMysql(group){

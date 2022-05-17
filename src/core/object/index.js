@@ -99,7 +99,7 @@ module.exports = class extends require('../base.js') {
 
     async query(sql){
         let rows = await this._router.objectQuery(sql);
-        if (rows.length === 0) return rows;
+        if (rows.length === 0 || rows.length === undefined) return rows;
         return rows.map(row => this.fixData(".", row));
     }
 
